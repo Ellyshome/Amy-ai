@@ -1,0 +1,1201 @@
+// ============================================================
+// Amy-ai 项目业务逻辑图谱 - Neo4j Cypher 脚本
+// 生成时间：2024
+// 说明：导入 Neo4j 浏览器运行即可可视化项目架构
+// ============================================================
+
+// 清理旧数据（可选，根据需要注释掉）
+MATCH (n) DETACH DELETE n;
+
+// ============================================================
+// 1. 创建 File 节点 - 核心文件
+// ============================================================
+
+// === 入口文件 ===
+CREATE (f:File {
+    name: "app.py",
+    description: "程序主入口，负责初始化配置、启动渠道管理器、处理信号"
+});
+
+CREATE (f:File {
+    name: "config.py",
+    description: "配置管理核心，加载 config.json 并提供全局配置访问"
+});
+
+CREATE (f:File {
+    name: "run.sh",
+    description: "启动脚本，提供 start/stop/restart/logs 等命令"
+});
+
+// === Bridge 层 ===
+CREATE (f:File {
+    name: "bridge/bridge.py",
+    description: "消息桥接核心，连接渠道层与 Bot/Agent 逻辑"
+});
+
+CREATE (f:File {
+    name: "bridge/context.py",
+    description: "上下文定义，封装消息类型、会话 ID 等信息"
+});
+
+CREATE (f:File {
+    name: "bridge/reply.py",
+    description: "回复定义，定义回复类型和内容结构"
+});
+
+CREATE (f:File {
+    name: "bridge/agent_bridge.py",
+    description: "Agent 模式桥接器，处理 Agent 消息流转"
+});
+
+CREATE (f:File {
+    name: "bridge/agent_event_handler.py",
+    description: "Agent 事件处理器，处理 Agent 运行事件"
+});
+
+CREATE (f:File {
+    name: "bridge/agent_initializer.py",
+    description: "Agent 初始化器，负责 Agent 实例创建和配置"
+});
+
+// === Channel 层 ===
+CREATE (f:File {
+    name: "channel/channel_factory.py",
+    description: "渠道工厂，根据配置创建对应渠道实例"
+});
+
+CREATE (f:File {
+    name: "channel/chat_channel.py",
+    description: "聊天渠道基类，定义渠道通用接口"
+});
+
+CREATE (f:File {
+    name: "channel/chat_message.py",
+    description: "聊天消息定义，标准化不同渠道的消息格式"
+});
+
+CREATE (f:File {
+    name: "channel/weixin/weixin_channel.py",
+    description: "微信渠道实现，通过官方 ilink 接口接入"
+});
+
+CREATE (f:File {
+    name: "channel/weixin/weixin_message.py",
+    description: "微信消息格式化"
+});
+
+CREATE (f:File {
+    name: "channel/feishu/feishu_channel.py",
+    description: "飞书渠道实现，支持 webhook 和 websocket 模式"
+});
+
+CREATE (f:File {
+    name: "channel/dingtalk/dingtalk_channel.py",
+    description: "钉钉渠道实现"
+});
+
+CREATE (f:File {
+    name: "channel/wecom_bot/wecom_bot_channel.py",
+    description: "企业微信机器人渠道实现"
+});
+
+CREATE (f:File {
+    name: "channel/web/web_channel.py",
+    description: "Web 控制台渠道，提供 Web 聊天界面"
+});
+
+CREATE (f:File {
+    name: "channel/terminal/terminal_channel.py",
+    description: "终端渠道，支持命令行交互"
+});
+
+// === Models 层 ===
+CREATE (f:File {
+    name: "models/bot.py",
+    description: "Bot 基类，定义对话模型通用接口"
+});
+
+CREATE (f:File {
+    name: "models/bot_factory.py",
+    description: "Bot 工厂，根据配置创建对应模型实例"
+});
+
+CREATE (f:File {
+    name: "models/session_manager.py",
+    description: "会话管理器，管理多用户会话上下文"
+});
+
+CREATE (f:File {
+    name: "models/openai_compatible_bot.py",
+    description: "OpenAI 兼容 Bot 基类，支持兼容 OpenAI API 的服务"
+});
+
+CREATE (f:File {
+    name: "models/openai/open_ai_bot.py",
+    description: "OpenAI 对话模型实现，支持 Completion 和 ChatCompletion API"
+});
+
+CREATE (f:File {
+    name: "models/chatgpt/chat_gpt_bot.py",
+    description: "ChatGPT Bot 实现，支持 Azure 和原生 OpenAI"
+});
+
+CREATE (f:File {
+    name: "models/ali/ali_qwen_bot.py",
+    description: "阿里通义千问 Bot 实现"
+});
+
+CREATE (f:File {
+    name: "models/baidu/baidu_wenxin.py",
+    description: "百度文心一言 Bot 实现"
+});
+
+CREATE (f:File {
+    name: "models/xunfei/xunfei_spark_bot.py",
+    description: "讯飞星火 Bot 实现"
+});
+
+CREATE (f:File {
+    name: "models/zhipuai/zhipuai_bot.py",
+    description: "智谱 AI Bot 实现"
+});
+
+CREATE (f:File {
+    name: "models/moonshot/moonshot_bot.py",
+    description: "Moonshot(Kimi) Bot 实现"
+});
+
+CREATE (f:File {
+    name: "models/gemini/google_gemini_bot.py",
+    description: "Google Gemini Bot 实现"
+});
+
+CREATE (f:File {
+    name: "models/claudeapi/claude_api_bot.py",
+    description: "Claude API Bot 实现"
+});
+
+// === Agent 层 ===
+CREATE (f:File {
+    name: "agent/chat/service.py",
+    description: "对话服务，处理对话逻辑和流程"
+});
+
+CREATE (f:File {
+    name: "agent/memory/manager.py",
+    description: "记忆管理器，管理长期记忆的存储和检索"
+});
+
+CREATE (f:File {
+    name: "agent/memory/conversation_store.py",
+    description: "对话存储，持久化对话历史"
+});
+
+CREATE (f:File {
+    name: "agent/memory/embedding.py",
+    description: "嵌入服务，将文本转换为向量"
+});
+
+CREATE (f:File {
+    name: "agent/memory/summarizer.py",
+    description: "摘要生成器，为对话生成摘要"
+});
+
+CREATE (f:File {
+    name: "agent/prompt/builder.py",
+    description: "Prompt 构建器，组装系统提示词"
+});
+
+CREATE (f:File {
+    name: "agent/skills/manager.py",
+    description: "技能管理器，加载和管理 Skills"
+});
+
+CREATE (f:File {
+    name: "agent/skills/loader.py",
+    description: "技能加载器，从文件系统加载 Skills"
+});
+
+CREATE (f:File {
+    name: "agent/tools/tool_manager.py",
+    description: "工具管理器，管理和调度工具"
+});
+
+CREATE (f:File {
+    name: "agent/tools/base_tool.py",
+    description: "工具基类，定义工具通用接口"
+});
+
+CREATE (f:File {
+    name: "agent/tools/bash/bash.py",
+    description: "Bash 工具，执行 shell 命令"
+});
+
+CREATE (f:File {
+    name: "agent/tools/read/read.py",
+    description: "文件读取工具"
+});
+
+CREATE (f:File {
+    name: "agent/tools/write/write.py",
+    description: "文件写入工具"
+});
+
+CREATE (f:File {
+    name: "agent/tools/edit/edit.py",
+    description: "文件编辑工具"
+});
+
+CREATE (f:File {
+    name: "agent/tools/web_search/search.py",
+    description: "网页搜索工具"
+});
+
+CREATE (f:File {
+    name: "agent/tools/vision/analyze.py",
+    description: "视觉分析工具，识别图片内容"
+});
+
+// === Plugins 层 ===
+CREATE (f:File {
+    name: "plugins/plugin_manager.py",
+    description: "插件管理器，加载和调度插件"
+});
+
+CREATE (f:File {
+    name: "plugins/event.py",
+    description: "插件事件定义"
+});
+
+CREATE (f:File {
+    name: "plugins/agent/agent.py",
+    description: "Agent 模式插件，启用 Agent 功能"
+});
+
+CREATE (f:File {
+    name: "plugins/godcmd/godcmd.py",
+    description: "管理员命令插件，提供管理功能"
+});
+
+CREATE (f:File {
+    name: "plugins/role/role.py",
+    description: "角色扮演插件"
+});
+
+CREATE (f:File {
+    name: "plugins/keyword/keyword.py",
+    description: "关键词匹配插件"
+});
+
+CREATE (f:File {
+    name: "plugins/banwords/banwords.py",
+    description: "敏感词过滤插件"
+});
+
+// === Common 层 ===
+CREATE (f:File {
+    name: "common/log.py",
+    description: "日志模块，统一日志处理"
+});
+
+CREATE (f:File {
+    name: "common/const.py",
+    description: "常量定义，包含模型列表、渠道类型等"
+});
+
+CREATE (f:File {
+    name: "common/singleton.py",
+    description: "单例模式实现"
+});
+
+CREATE (f:File {
+    name: "common/utils.py",
+    description: "通用工具函数"
+});
+
+// ============================================================
+// 2. 创建 Class 节点
+// ============================================================
+
+// === app.py 中的类 ===
+CREATE (c:Class {
+    name: "ChannelManager",
+    description: "渠道生命周期管理器，管理多渠道并发运行"
+});
+
+// === config.py 中的类 ===
+CREATE (c:Class {
+    name: "Config",
+    description: "配置字典类，继承 dict，提供配置加载和访问"
+});
+
+// === bridge 中的类 ===
+CREATE (c:Class {
+    name: "BridgeContext",
+    description: "桥接上下文，封装消息处理的上下文信息"
+});
+
+CREATE (c:Class {
+    name: "Reply",
+    description: "回复对象，包含回复类型和内容"
+});
+
+CREATE (c:Class {
+    name: "AgentBridge",
+    description: "Agent 桥接器，处理 Agent 模式下的消息流转"
+});
+
+// === channel 中的类 ===
+CREATE (c:Class {
+    name: "ChannelFactory",
+    description: "渠道工厂类，根据名称创建渠道实例"
+});
+
+CREATE (c:Class {
+    name: "ChatChannel",
+    description: "聊天渠道基类，定义渠道标准接口"
+});
+
+CREATE (c:Class {
+    name: "WeixinChannel",
+    description: "微信渠道实现类"
+});
+
+CREATE (c:Class {
+    name: "FeiShuChanel",
+    description: "飞书渠道实现类"
+});
+
+CREATE (c:Class {
+    name: "DingTalkChanel",
+    description: "钉钉渠道实现类"
+});
+
+CREATE (c:Class {
+    name: "WecomBotChannel",
+    description: "企业微信机器人渠道实现类"
+});
+
+CREATE (c:Class {
+    name: "WebChannel",
+    description: "Web 控制台渠道实现类"
+});
+
+CREATE (c:Class {
+    name: "TerminalChannel",
+    description: "终端渠道实现类"
+});
+
+// === models 中的类 ===
+CREATE (c:Class {
+    name: "Bot",
+    description: "Bot 基类，定义对话模型标准接口"
+});
+
+CREATE (c:Class {
+    name: "SessionManager",
+    description: "会话管理器，管理多用户会话"
+});
+
+CREATE (c:Class {
+    name: "OpenAICompatibleBot",
+    description: "OpenAI 兼容 Bot 基类"
+});
+
+CREATE (c:Class {
+    name: "OpenAIBot",
+    description: "OpenAI Bot 实现类，支持 Completion 和 ChatCompletion"
+});
+
+CREATE (c:Class {
+    name: "ChatGPTBot",
+    description: "ChatGPT Bot 实现类"
+});
+
+CREATE (c:Class {
+    name: "AzureChatGPTBot",
+    description: "Azure ChatGPT Bot 实现类"
+});
+
+CREATE (c:Class {
+    name: "AliQwenBot",
+    description: "阿里通义千问 Bot 实现类"
+});
+
+CREATE (c:Class {
+    name: "BaiduWenxinBot",
+    description: "百度文心一言 Bot 实现类"
+});
+
+CREATE (c:Class {
+    name: "XunFeiBot",
+    description: "讯飞星火 Bot 实现类"
+});
+
+CREATE (c:Class {
+    name: "ZHIPUAIBot",
+    description: "智谱 AI Bot 实现类"
+});
+
+CREATE (c:Class {
+    name: "MoonshotBot",
+    description: "Moonshot Bot 实现类"
+});
+
+CREATE (c:Class {
+    name: "GoogleGeminiBot",
+    description: "Google Gemini Bot 实现类"
+});
+
+CREATE (c:Class {
+    name: "ClaudeAPIBot",
+    description: "Claude API Bot 实现类"
+});
+
+// === agent 中的类 ===
+CREATE (c:Class {
+    name: "ChatService",
+    description: "对话服务类，处理对话逻辑"
+});
+
+CREATE (c:Class {
+    name: "MemoryManager",
+    description: "记忆管理器类，管理长期记忆"
+});
+
+CREATE (c:Class {
+    name: "ConversationStore",
+    description: "对话存储类，持久化对话"
+});
+
+CREATE (c:Class {
+    name: "EmbeddingService",
+    description: "嵌入服务类，文本向量化"
+});
+
+CREATE (c:Class {
+    name: "Summarizer",
+    description: "摘要生成器类"
+});
+
+CREATE (c:Class {
+    name: "PromptBuilder",
+    description: "Prompt 构建器类"
+});
+
+CREATE (c:Class {
+    name: "SkillManager",
+    description: "技能管理器类"
+});
+
+CREATE (c:Class {
+    name: "ToolManager",
+    description: "工具管理器类"
+});
+
+CREATE (c:Class {
+    name: "BaseTool",
+    description: "工具基类"
+});
+
+CREATE (c:Class {
+    name: "BashTool",
+    description: "Bash 工具类，执行 shell 命令"
+});
+
+CREATE (c:Class {
+    name: "ReadTool",
+    description: "文件读取工具类"
+});
+
+CREATE (c:Class {
+    name: "WriteTool",
+    description: "文件写入工具类"
+});
+
+CREATE (c:Class {
+    name: "EditTool",
+    description: "文件编辑工具类"
+});
+
+CREATE (c:Class {
+    name: "WebSearchTool",
+    description: "网页搜索工具类"
+});
+
+CREATE (c:Class {
+    name: "VisionTool",
+    description: "视觉分析工具类"
+});
+
+// === plugins 中的类 ===
+CREATE (c:Class {
+    name: "PluginManager",
+    description: "插件管理器类，加载和管理插件"
+});
+
+CREATE (c:Class {
+    name: "Plugin",
+    description: "插件基类"
+});
+
+CREATE (c:Class {
+    name: "AgentPlugin",
+    description: "Agent 插件类"
+});
+
+CREATE (c:Class {
+    name: "GodcmdPlugin",
+    description: "管理员命令插件类"
+});
+
+CREATE (c:Class {
+    name: "RolePlugin",
+    description: "角色扮演插件类"
+});
+
+CREATE (c:Class {
+    name: "KeywordPlugin",
+    description: "关键词匹配插件类"
+});
+
+CREATE (c:Class {
+    name: "BanwordsPlugin",
+    description: "敏感词过滤插件类"
+});
+
+// ============================================================
+// 3. 创建 Function 节点 - 核心函数
+// ============================================================
+
+// === app.py 中的函数 ===
+CREATE (fn:Function {
+    name: "run",
+    description: "主运行函数，启动整个系统",
+    params: "无",
+    return: "无"
+});
+
+CREATE (fn:Function {
+    name: "_parse_channel_type",
+    description: "解析渠道类型配置为列表",
+    params: "raw: str|list",
+    return: "list[str]"
+});
+
+CREATE (fn:Function {
+    name: "get_channel_manager",
+    description: "获取渠道管理器实例",
+    params: "无",
+    return: "ChannelManager"
+});
+
+CREATE (fn:Function {
+    name: "_clear_singleton_cache",
+    description: "清除渠道类的单例缓存",
+    params: "channel_name: str",
+    return: "无"
+});
+
+CREATE (fn:Function {
+    name: "sigterm_handler_wrap",
+    description: "信号处理包装函数",
+    params: "_signo: int",
+    return: "无"
+});
+
+// === ChannelManager 方法 ===
+CREATE (fn:Function {
+    name: "ChannelManager.__init__",
+    description: "初始化渠道管理器",
+    params: "self",
+    return: "无"
+});
+
+CREATE (fn:Function {
+    name: "ChannelManager.start",
+    description: "启动一个或多个渠道",
+    params: "channel_names: list, first_start: bool",
+    return: "无"
+});
+
+CREATE (fn:Function {
+    name: "ChannelManager.stop",
+    description: "停止渠道",
+    params: "channel_name: str (可选)",
+    return: "无"
+});
+
+CREATE (fn:Function {
+    name: "ChannelManager.restart",
+    description: "重启渠道",
+    params: "new_channel_name: str",
+    return: "无"
+});
+
+CREATE (fn:Function {
+    name: "ChannelManager.add_channel",
+    description: "动态添加渠道",
+    params: "channel_name: str",
+    return: "无"
+});
+
+CREATE (fn:Function {
+    name: "ChannelManager.remove_channel",
+    description: "移除渠道",
+    params: "channel_name: str",
+    return: "无"
+});
+
+CREATE (fn:Function {
+    name: "ChannelManager._run_channel",
+    description: "在线程中运行渠道",
+    params: "name: str, channel: object",
+    return: "无"
+});
+
+CREATE (fn:Function {
+    name: "ChannelManager._interrupt_thread",
+    description: "中断线程",
+    params: "th: Thread, name: str",
+    return: "无"
+});
+
+// === Config 方法 ===
+CREATE (fn:Function {
+    name: "load_config",
+    description: "加载配置文件",
+    params: "无",
+    return: "无"
+});
+
+CREATE (fn:Function {
+    name: "conf",
+    description: "获取全局配置对象",
+    params: "无",
+    return: "Config"
+});
+
+CREATE (fn:Function {
+    name: "Config.get",
+    description: "获取配置项",
+    params: "key: str, default: any",
+    return: "any"
+});
+
+CREATE (fn:Function {
+    name: "Config.get_user_data",
+    description: "获取用户数据",
+    params: "user: str",
+    return: "dict"
+});
+
+CREATE (fn:Function {
+    name: "Config.save_user_datas",
+    description: "保存用户数据",
+    params: "无",
+    return: "无"
+});
+
+// === Bot 方法 ===
+CREATE (fn:Function {
+    name: "Bot.reply",
+    description: "处理消息并生成回复",
+    params: "query: str, context: Context",
+    return: "Reply"
+});
+
+CREATE (fn:Function {
+    name: "Bot.reply_text",
+    description: "文本回复处理",
+    params: "session: Session",
+    return: "dict"
+});
+
+CREATE (fn:Function {
+    name: "Bot.call_with_tools",
+    description: "使用工具调用功能",
+    params: "messages: list, tools: list, stream: bool",
+    return: "Response|Generator"
+});
+
+// === Channel 方法 ===
+CREATE (fn:Function {
+    name: "Channel.startup",
+    description: "启动渠道服务",
+    params: "self",
+    return: "无"
+});
+
+CREATE (fn:Function {
+    name: "Channel.send",
+    description: "发送消息",
+    params: "reply: Reply",
+    return: "无"
+});
+
+CREATE (fn:Function {
+    name: "Channel.handle_message",
+    description: "处理接收到的消息",
+    params: "message: Message",
+    return: "无"
+});
+
+// === Agent 方法 ===
+CREATE (fn:Function {
+    name: "MemoryManager.save_memory",
+    description: "保存记忆",
+    params: "session_id: str, content: str",
+    return: "无"
+});
+
+CREATE (fn:Function {
+    name: "MemoryManager.search_memory",
+    description: "搜索记忆",
+    params: "query: str, top_k: int",
+    return: "list"
+});
+
+CREATE (fn:Function {
+    name: "ToolManager.execute_tool",
+    description: "执行工具",
+    params: "tool_name: str, params: dict",
+    return: "any"
+});
+
+CREATE (fn:Function {
+    name: "SkillManager.load_skills",
+    description: "加载技能",
+    params: "workspace: str",
+    return: "list"
+});
+
+// === Plugin 方法 ===
+CREATE (fn:Function {
+    name: "PluginManager.load_plugins",
+    description: "加载所有插件",
+    params: "无",
+    return: "无"
+});
+
+CREATE (fn:Function {
+    name: "Plugin.on_handle_context",
+    description: "处理上下文的插件钩子",
+    params: "context: Context",
+    return: "无"
+});
+
+// ============================================================
+// 4. 创建关系 - CONTAINS (文件包含类/函数)
+// ============================================================
+
+MATCH (f:File {name: "app.py"}), (c:Class {name: "ChannelManager"})
+CREATE (f)-[:CONTAINS]->(c);
+
+MATCH (f:File {name: "app.py"}), (fn:Function {name: "run"})
+CREATE (f)-[:CONTAINS]->(fn);
+
+MATCH (f:File {name: "app.py"}), (fn:Function {name: "_parse_channel_type"})
+CREATE (f)-[:CONTAINS]->(fn);
+
+MATCH (f:File {name: "app.py"}), (fn:Function {name: "get_channel_manager"})
+CREATE (f)-[:CONTAINS]->(fn);
+
+MATCH (f:File {name: "app.py"}), (fn:Function {name: "_clear_singleton_cache"})
+CREATE (f)-[:CONTAINS]->(fn);
+
+MATCH (f:File {name: "app.py"}), (fn:Function {name: "sigterm_handler_wrap"})
+CREATE (f)-[:CONTAINS]->(fn);
+
+MATCH (f:File {name: "app.py"}), (fn:Function {name: "ChannelManager.__init__"})
+CREATE (f)-[:CONTAINS]->(fn);
+
+MATCH (f:File {name: "app.py"}), (fn:Function {name: "ChannelManager.start"})
+CREATE (f)-[:CONTAINS]->(fn);
+
+MATCH (f:File {name: "app.py"}), (fn:Function {name: "ChannelManager.stop"})
+CREATE (f)-[:CONTAINS]->(fn);
+
+MATCH (f:File {name: "app.py"}), (fn:Function {name: "ChannelManager.restart"})
+CREATE (f)-[:CONTAINS]->(fn);
+
+MATCH (f:File {name: "app.py"}), (fn:Function {name: "ChannelManager.add_channel"})
+CREATE (f)-[:CONTAINS]->(fn);
+
+MATCH (f:File {name: "app.py"}), (fn:Function {name: "ChannelManager.remove_channel"})
+CREATE (f)-[:CONTAINS]->(fn);
+
+MATCH (f:File {name: "config.py"}), (c:Class {name: "Config"})
+CREATE (f)-[:CONTAINS]->(c);
+
+MATCH (f:File {name: "config.py"}), (fn:Function {name: "load_config"})
+CREATE (f)-[:CONTAINS]->(fn);
+
+MATCH (f:File {name: "config.py"}), (fn:Function {name: "conf"})
+CREATE (f)-[:CONTAINS]->(fn);
+
+MATCH (f:File {name: "bridge/bridge.py"}), (c:Class {name: "BridgeContext"})
+CREATE (f)-[:CONTAINS]->(c);
+
+MATCH (f:File {name: "bridge/reply.py"}), (c:Class {name: "Reply"})
+CREATE (f)-[:CONTAINS]->(c);
+
+MATCH (f:File {name: "bridge/agent_bridge.py"}), (c:Class {name: "AgentBridge"})
+CREATE (f)-[:CONTAINS]->(c);
+
+MATCH (f:File {name: "channel/channel_factory.py"}), (c:Class {name: "ChannelFactory"})
+CREATE (f)-[:CONTAINS]->(c);
+
+MATCH (f:File {name: "channel/chat_channel.py"}), (c:Class {name: "ChatChannel"})
+CREATE (f)-[:CONTAINS]->(c);
+
+MATCH (f:File {name: "channel/weixin/weixin_channel.py"}), (c:Class {name: "WeixinChannel"})
+CREATE (f)-[:CONTAINS]->(c);
+
+MATCH (f:File {name: "channel/feishu/feishu_channel.py"}), (c:Class {name: "FeiShuChanel"})
+CREATE (f)-[:CONTAINS]->(c);
+
+MATCH (f:File {name: "channel/dingtalk/dingtalk_channel.py"}), (c:Class {name: "DingTalkChanel"})
+CREATE (f)-[:CONTAINS]->(c);
+
+MATCH (f:File {name: "channel/wecom_bot/wecom_bot_channel.py"}), (c:Class {name: "WecomBotChannel"})
+CREATE (f)-[:CONTAINS]->(c);
+
+MATCH (f:File {name: "channel/web/web_channel.py"}), (c:Class {name: "WebChannel"})
+CREATE (f)-[:CONTAINS]->(c);
+
+MATCH (f:File {name: "channel/terminal/terminal_channel.py"}), (c:Class {name: "TerminalChannel"})
+CREATE (f)-[:CONTAINS]->(c);
+
+MATCH (f:File {name: "models/bot.py"}), (c:Class {name: "Bot"})
+CREATE (f)-[:CONTAINS]->(c);
+
+MATCH (f:File {name: "models/session_manager.py"}), (c:Class {name: "SessionManager"})
+CREATE (f)-[:CONTAINS]->(c);
+
+MATCH (f:File {name: "models/openai_compatible_bot.py"}), (c:Class {name: "OpenAICompatibleBot"})
+CREATE (f)-[:CONTAINS]->(c);
+
+MATCH (f:File {name: "models/openai/open_ai_bot.py"}), (c:Class {name: "OpenAIBot"})
+CREATE (f)-[:CONTAINS]->(c);
+
+MATCH (f:File {name: "models/chatgpt/chat_gpt_bot.py"}), (c:Class {name: "ChatGPTBot"})
+CREATE (f)-[:CONTAINS]->(c);
+
+MATCH (f:File {name: "models/ali/ali_qwen_bot.py"}), (c:Class {name: "AliQwenBot"})
+CREATE (f)-[:CONTAINS]->(c);
+
+MATCH (f:File {name: "models/baidu/baidu_wenxin.py"}), (c:Class {name: "BaiduWenxinBot"})
+CREATE (f)-[:CONTAINS]->(c);
+
+MATCH (f:File {name: "models/xunfei/xunfei_spark_bot.py"}), (c:Class {name: "XunFeiBot"})
+CREATE (f)-[:CONTAINS]->(c);
+
+MATCH (f:File {name: "models/zhipuai/zhipuai_bot.py"}), (c:Class {name: "ZHIPUAIBot"})
+CREATE (f)-[:CONTAINS]->(c);
+
+MATCH (f:File {name: "models/moonshot/moonshot_bot.py"}), (c:Class {name: "MoonshotBot"})
+CREATE (f)-[:CONTAINS]->(c);
+
+MATCH (f:File {name: "models/gemini/google_gemini_bot.py"}), (c:Class {name: "GoogleGeminiBot"})
+CREATE (f)-[:CONTAINS]->(c);
+
+MATCH (f:File {name: "models/claudeapi/claude_api_bot.py"}), (c:Class {name: "ClaudeAPIBot"})
+CREATE (f)-[:CONTAINS]->(c);
+
+MATCH (f:File {name: "agent/chat/service.py"}), (c:Class {name: "ChatService"})
+CREATE (f)-[:CONTAINS]->(c);
+
+MATCH (f:File {name: "agent/memory/manager.py"}), (c:Class {name: "MemoryManager"})
+CREATE (f)-[:CONTAINS]->(c);
+
+MATCH (f:File {name: "agent/memory/conversation_store.py"}), (c:Class {name: "ConversationStore"})
+CREATE (f)-[:CONTAINS]->(c);
+
+MATCH (f:File {name: "agent/memory/embedding.py"}), (c:Class {name: "EmbeddingService"})
+CREATE (f)-[:CONTAINS]->(c);
+
+MATCH (f:File {name: "agent/memory/summarizer.py"}), (c:Class {name: "Summarizer"})
+CREATE (f)-[:CONTAINS]->(c);
+
+MATCH (f:File {name: "agent/prompt/builder.py"}), (c:Class {name: "PromptBuilder"})
+CREATE (f)-[:CONTAINS]->(c);
+
+MATCH (f:File {name: "agent/skills/manager.py"}), (c:Class {name: "SkillManager"})
+CREATE (f)-[:CONTAINS]->(c);
+
+MATCH (f:File {name: "agent/tools/tool_manager.py"}), (c:Class {name: "ToolManager"})
+CREATE (f)-[:CONTAINS]->(c);
+
+MATCH (f:File {name: "agent/tools/base_tool.py"}), (c:Class {name: "BaseTool"})
+CREATE (f)-[:CONTAINS]->(c);
+
+MATCH (f:File {name: "agent/tools/bash/bash.py"}), (c:Class {name: "BashTool"})
+CREATE (f)-[:CONTAINS]->(c);
+
+MATCH (f:File {name: "agent/tools/read/read.py"}), (c:Class {name: "ReadTool"})
+CREATE (f)-[:CONTAINS]->(c);
+
+MATCH (f:File {name: "agent/tools/write/write.py"}), (c:Class {name: "WriteTool"})
+CREATE (f)-[:CONTAINS]->(c);
+
+MATCH (f:File {name: "agent/tools/edit/edit.py"}), (c:Class {name: "EditTool"})
+CREATE (f)-[:CONTAINS]->(c);
+
+MATCH (f:File {name: "agent/tools/web_search/search.py"}), (c:Class {name: "WebSearchTool"})
+CREATE (f)-[:CONTAINS]->(c);
+
+MATCH (f:File {name: "agent/tools/vision/analyze.py"}), (c:Class {name: "VisionTool"})
+CREATE (f)-[:CONTAINS]->(c);
+
+MATCH (f:File {name: "plugins/plugin_manager.py"}), (c:Class {name: "PluginManager"})
+CREATE (f)-[:CONTAINS]->(c);
+
+MATCH (f:File {name: "plugins/event.py"}), (c:Class {name: "Plugin"})
+CREATE (f)-[:CONTAINS]->(c);
+
+MATCH (f:File {name: "plugins/agent/agent.py"}), (c:Class {name: "AgentPlugin"})
+CREATE (f)-[:CONTAINS]->(c);
+
+MATCH (f:File {name: "plugins/godcmd/godcmd.py"}), (c:Class {name: "GodcmdPlugin"})
+CREATE (f)-[:CONTAINS]->(c);
+
+MATCH (f:File {name: "plugins/role/role.py"}), (c:Class {name: "RolePlugin"})
+CREATE (f)-[:CONTAINS]->(c);
+
+MATCH (f:File {name: "plugins/keyword/keyword.py"}), (c:Class {name: "KeywordPlugin"})
+CREATE (f)-[:CONTAINS]->(c);
+
+MATCH (f:File {name: "plugins/banwords/banwords.py"}), (c:Class {name: "BanwordsPlugin"})
+CREATE (f)-[:CONTAINS]->(c);
+
+// Class CONTAINS Function 关系
+MATCH (c:Class {name: "ChannelManager"}), (fn:Function {name: "ChannelManager.__init__"})
+CREATE (c)-[:CONTAINS]->(fn);
+
+MATCH (c:Class {name: "ChannelManager"}), (fn:Function {name: "ChannelManager.start"})
+CREATE (c)-[:CONTAINS]->(fn);
+
+MATCH (c:Class {name: "ChannelManager"}), (fn:Function {name: "ChannelManager.stop"})
+CREATE (c)-[:CONTAINS]->(fn);
+
+MATCH (c:Class {name: "ChannelManager"}), (fn:Function {name: "ChannelManager.restart"})
+CREATE (c)-[:CONTAINS]->(fn);
+
+MATCH (c:Class {name: "ChannelManager"}), (fn:Function {name: "ChannelManager.add_channel"})
+CREATE (c)-[:CONTAINS]->(fn);
+
+MATCH (c:Class {name: "ChannelManager"}), (fn:Function {name: "ChannelManager.remove_channel"})
+CREATE (c)-[:CONTAINS]->(fn);
+
+MATCH (c:Class {name: "ChannelManager"}), (fn:Function {name: "ChannelManager._run_channel"})
+CREATE (c)-[:CONTAINS]->(fn);
+
+MATCH (c:Class {name: "ChannelManager"}), (fn:Function {name: "ChannelManager._interrupt_thread"})
+CREATE (c)-[:CONTAINS]->(fn);
+
+MATCH (c:Class {name: "Config"}), (fn:Function {name: "Config.get"})
+CREATE (c)-[:CONTAINS]->(fn);
+
+MATCH (c:Class {name: "Config"}), (fn:Function {name: "Config.get_user_data"})
+CREATE (c)-[:CONTAINS]->(fn);
+
+MATCH (c:Class {name: "Config"}), (fn:Function {name: "Config.save_user_datas"})
+CREATE (c)-[:CONTAINS]->(fn);
+
+MATCH (c:Class {name: "Bot"}), (fn:Function {name: "Bot.reply"})
+CREATE (c)-[:CONTAINS]->(fn);
+
+MATCH (c:Class {name: "Bot"}), (fn:Function {name: "Bot.reply_text"})
+CREATE (c)-[:CONTAINS]->(fn);
+
+MATCH (c:Class {name: "Bot"}), (fn:Function {name: "Bot.call_with_tools"})
+CREATE (c)-[:CONTAINS]->(fn);
+
+MATCH (c:Class {name: "ChatChannel"}), (fn:Function {name: "Channel.startup"})
+CREATE (c)-[:CONTAINS]->(fn);
+
+MATCH (c:Class {name: "ChatChannel"}), (fn:Function {name: "Channel.send"})
+CREATE (c)-[:CONTAINS]->(fn);
+
+MATCH (c:Class {name: "ChatChannel"}), (fn:Function {name: "Channel.handle_message"})
+CREATE (c)-[:CONTAINS]->(fn);
+
+MATCH (c:Class {name: "MemoryManager"}), (fn:Function {name: "MemoryManager.save_memory"})
+CREATE (c)-[:CONTAINS]->(fn);
+
+MATCH (c:Class {name: "MemoryManager"}), (fn:Function {name: "MemoryManager.search_memory"})
+CREATE (c)-[:CONTAINS]->(fn);
+
+MATCH (c:Class {name: "ToolManager"}), (fn:Function {name: "ToolManager.execute_tool"})
+CREATE (c)-[:CONTAINS]->(fn);
+
+MATCH (c:Class {name: "SkillManager"}), (fn:Function {name: "SkillManager.load_skills"})
+CREATE (c)-[:CONTAINS]->(fn);
+
+MATCH (c:Class {name: "PluginManager"}), (fn:Function {name: "PluginManager.load_plugins"})
+CREATE (c)-[:CONTAINS]->(fn);
+
+MATCH (c:Class {name: "Plugin"}), (fn:Function {name: "Plugin.on_handle_context"})
+CREATE (c)-[:CONTAINS]->(fn);
+
+// ============================================================
+// 5. 创建关系 - CALLS (函数调用)
+// ============================================================
+
+// run 函数调用链
+MATCH (fn1:Function {name: "run"}), (fn2:Function {name: "load_config"})
+CREATE (fn1)-[:CALLS]->(fn2);
+
+MATCH (fn1:Function {name: "run"}), (fn2:Function {name: "sigterm_handler_wrap"})
+CREATE (fn1)-[:CALLS]->(fn2);
+
+MATCH (fn1:Function {name: "run"}), (fn2:Function {name: "_parse_channel_type"})
+CREATE (fn1)-[:CALLS]->(fn2);
+
+MATCH (fn1:Function {name: "run"}), (fn2:Function {name: "ChannelManager.start"})
+CREATE (fn1)-[:CALLS {via: "实例化后调用"}]->(fn2);
+
+MATCH (fn1:Function {name: "ChannelManager.start"}), (fn2:Function {name: "ChannelManager._run_channel"})
+CREATE (fn1)-[:CALLS]->(fn2);
+
+MATCH (fn1:Function {name: "ChannelManager._run_channel"}), (fn2:Function {name: "Channel.startup"})
+CREATE (fn1)-[:CALLS {description: "调用渠道启动方法"}]->(fn2);
+
+MATCH (fn1:Function {name: "ChannelManager.stop"}), (fn2:Function {name: "ChannelManager._interrupt_thread"})
+CREATE (fn1)-[:CALLS]->(fn2);
+
+MATCH (fn1:Function {name: "ChannelManager.restart"}), (fn2:Function {name: "ChannelManager.stop"})
+CREATE (fn1)-[:CALLS]->(fn2);
+
+MATCH (fn1:Function {name: "ChannelManager.restart"}), (fn2:Function {name: "ChannelManager.start"})
+CREATE (fn1)-[:CALLS]->(fn2);
+
+// Bot 调用链
+MATCH (fn1:Function {name: "Channel.handle_message"}), (fn2:Function {name: "Bot.reply"})
+CREATE (fn1)-[:CALLS {description: "渠道接收到消息后调用 Bot 处理"}]->(fn2);
+
+MATCH (fn1:Function {name: "Bot.reply"}), (fn2:Function {name: "Bot.reply_text"})
+CREATE (fn1)-[:CALLS]->(fn2);
+
+MATCH (fn1:Function {name: "Bot.reply"}), (fn2:Function {name: "Bot.call_with_tools"})
+CREATE (fn1)-[:CALLS {description: "Agent 模式下调用工具"}]->(fn2);
+
+// 配置加载
+MATCH (fn1:Function {name: "load_config"}), (fn2:Function {name: "Config.get"})
+CREATE (fn1)-[:CALLS]->(fn2);
+
+MATCH (fn1:Function {name: "load_config"}), (fn2:Function {name: "PluginManager.load_plugins"})
+CREATE (fn1)-[:CALLS {description: "首次启动时加载插件"}]->(fn2);
+
+// Agent 相关调用
+MATCH (fn1:Function {name: "Bot.call_with_tools"}), (fn2:Function {name: "ToolManager.execute_tool"})
+CREATE (fn1)-[:CALLS {description: "执行工具"}]->(fn2);
+
+MATCH (fn1:Function {name: "Bot.call_with_tools"}), (fn2:Function {name: "MemoryManager.save_memory"})
+CREATE (fn1)-[:CALLS {description: "保存对话记忆"}]->(fn2);
+
+MATCH (fn1:Function {name: "Bot.call_with_tools"}), (fn2:Function {name: "MemoryManager.search_memory"})
+CREATE (fn1)-[:CALLS {description: "检索历史记忆"}]->(fn2);
+
+// 插件调用
+MATCH (fn1:Function {name: "PluginManager.load_plugins"}), (fn2:Function {name: "Plugin.on_handle_context"})
+CREATE (fn1)-[:CALLS {description: "注册插件钩子"}]->(fn2);
+
+// ============================================================
+// 6. 创建关系 - DEPENDS_ON (依赖关系)
+// ============================================================
+
+// 文件依赖
+MATCH (f1:File {name: "app.py"}), (f2:File {name: "config.py"})
+CREATE (f1)-[:DEPENDS_ON {description: "导入配置模块"}]->(f2);
+
+MATCH (f1:File {name: "app.py"}), (f2:File {name: "channel/channel_factory.py"})
+CREATE (f1)-[:DEPENDS_ON {description: "导入渠道工厂"}]->(f2);
+
+MATCH (f1:File {name: "app.py"}), (f2:File {name: "plugins/plugin_manager.py"})
+CREATE (f1)-[:DEPENDS_ON {description: "导入插件管理器"}]->(f2);
+
+MATCH (f1:File {name: "config.py"}), (f2:File {name: "common/log.py"})
+CREATE (f1)-[:DEPENDS_ON {description: "导入日志模块"}]->(f2);
+
+MATCH (f1:File {name: "channel/channel_factory.py"}), (f2:File {name: "channel/weixin/weixin_channel.py"})
+CREATE (f1)-[:DEPENDS_ON {description: "动态导入具体渠道"}]->(f2);
+
+MATCH (f1:File {name: "models/bot_factory.py"}), (f2:File {name: "models/openai/open_ai_bot.py"})
+CREATE (f1)-[:DEPENDS_ON {description: "动态导入具体 Bot"}]->(f2);
+
+MATCH (f1:File {name: "bridge/bridge.py"}), (f2:File {name: "bridge/context.py"})
+CREATE (f1)-[:DEPENDS_ON {description: "导入上下文定义"}]->(f2);
+
+MATCH (f1:File {name: "bridge/bridge.py"}), (f2:File {name: "bridge/reply.py"})
+CREATE (f1)-[:DEPENDS_ON {description: "导入回复定义"}]->(f2);
+
+MATCH (f1:File {name: "agent/chat/service.py"}), (f2:File {name: "agent/memory/manager.py"})
+CREATE (f1)-[:DEPENDS_ON {description: "依赖记忆管理"}]->(f2);
+
+MATCH (f1:File {name: "agent/chat/service.py"}), (f2:File {name: "agent/prompt/builder.py"})
+CREATE (f1)-[:DEPENDS_ON {description: "依赖 Prompt 构建"}]->(f2);
+
+MATCH (f1:File {name: "agent/memory/manager.py"}), (f2:File {name: "agent/memory/embedding.py"})
+CREATE (f1)-[:DEPENDS_ON {description: "依赖向量化服务"}]->(f2);
+
+MATCH (f1:File {name: "agent/memory/manager.py"}), (f2:File {name: "agent/memory/conversation_store.py"})
+CREATE (f1)-[:DEPENDS_ON {description: "依赖对话存储"}]->(f2);
+
+MATCH (f1:File {name: "agent/tools/tool_manager.py"}), (f2:File {name: "agent/tools/base_tool.py"})
+CREATE (f1)-[:DEPENDS_ON {description: "继承工具基类"}]->(f2);
+
+// 类依赖
+MATCH (c1:Class {name: "ChannelManager"}), (c2:Class {name: "ChatChannel"})
+CREATE (c1)-[:DEPENDS_ON {description: "管理渠道实例"}]->(c2);
+
+MATCH (c1:Class {name: "WeixinChannel"}), (c2:Class {name: "ChatChannel"})
+CREATE (c1)-[:DEPENDS_ON {description: "继承渠道基类"}]->(c2);
+
+MATCH (c1:Class {name: "OpenAIBot"}), (c2:Class {name: "Bot"})
+CREATE (c1)-[:DEPENDS_ON {description: "继承 Bot 基类"}]->(c2);
+
+MATCH (c1:Class {name: "ChatGPTBot"}), (c2:Class {name: "Bot"})
+CREATE (c1)-[:DEPENDS_ON {description: "继承 Bot 基类"}]->(c2);
+
+MATCH (c1:Class {name: "MemoryManager"}), (c2:Class {name: "EmbeddingService"})
+CREATE (c1)-[:DEPENDS_ON {description: "使用嵌入服务"}]->(c2);
+
+MATCH (c1:Class {name: "ToolManager"}), (c2:Class {name: "BaseTool"})
+CREATE (c1)-[:DEPENDS_ON {description: "管理工具实例"}]->(c2);
+
+// ============================================================
+// 7. 创建索引（优化查询性能）
+// ============================================================
+
+CREATE INDEX file_name_index IF NOT EXISTS FOR (f:File) ON (f.name);
+CREATE INDEX class_name_index IF NOT EXISTS FOR (c:Class) ON (c.name);
+CREATE INDEX function_name_index IF NOT EXISTS FOR (fn:Function) ON (fn.name);
+
+// ============================================================
+// 8. 查询示例
+// ============================================================
+
+// 查询所有入口文件
+// MATCH (f:File {name: "app.py"}) RETURN f;
+
+// 查询 ChannelManager 的所有方法
+// MATCH (c:Class {name: "ChannelManager"})-[:CONTAINS]->(fn:Function) RETURN fn;
+
+// 查询 run 函数的调用链
+// MATCH path = (fn:Function {name: "run"})-[:CALLS*]->(target:Function) RETURN path;
+
+// 查询 app.py 的依赖关系
+// MATCH (f:File {name: "app.py"})-[:DEPENDS_ON*]-(related) RETURN related;
+
+// 查询完整的消息处理流程
+// MATCH path = (c1:Class {name: "WeixinChannel"})-[:CONTAINS]->()<-[:CALLS]-(bot:Class) RETURN path;
+
+// ============================================================
+// 完成提示
+// ============================================================
+RETURN "✅ Amy-ai 项目业务逻辑图谱已成功创建！" AS message,
+       "使用以下查询开始探索：" AS tip1,
+       "MATCH (n) RETURN n LIMIT 100;" AS query1,
+       "MATCH path = ()-[:CALLS]->() RETURN path LIMIT 50;" AS query2;

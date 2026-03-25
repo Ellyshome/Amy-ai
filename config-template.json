@@ -1,6 +1,7 @@
 {
   "channel_type": "weixin",
   "model": "MiniMax-M2.7",
+  "bot_type": "openai",
   "minimax_api_key": "",
   "zhipu_ai_api_key": "",
   "ark_api_key": "",
