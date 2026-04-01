@@ -1,0 +1,27 @@
+[project]
+name = "amy-ai"
+version = "0.1.0"
+description = "a Add for AIFlow"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "agentmesh-sdk>=0.1.3",
+    "aiohttp>=3.8.6,<3.10",
+    "chardet>=5.1.0",
+    "croniter>=2.0.0",
+    "dashscope>=1.25.15",
+    "dingtalk-stream>=0.20.0",
+    "lark-oapi>=1.5.3",
+    "linkai>=0.0.6.0",
+    "openai==0.27.8",
+    "pillow>=12.1.1",
+    "pycryptodome>=3.23.0",
+    "python-dotenv>=1.0.0",
+    "pyyaml>=6.0",
+    "qrcode>=8.2",
+    "requests>=2.28.2",
+    "web-py>=0.62",
+    "websocket-client>=1.4.0",
+    "wechatpy>=1.8.18",
+    "zai-sdk>=0.2.2",
+]

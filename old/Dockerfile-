@@ -1,0 +1,40 @@
+FROM python:3.10-slim-bullseye
+
+ARG TZ='Asia/Shanghai'
+
+ARG CHATGPT_ON_WECHAT_VER
+ARG APT_MIRROR=''
+
+RUN echo /etc/apt/sources.list
+RUN if [ -n "${APT_MIRROR}" ]; then \
+        sed -i "s|deb.debian.org|${APT_MIRROR}|g" /etc/apt/sources.list; \
+    fi
+ENV BUILD_PREFIX=/app
+
+ADD . ${BUILD_PREFIX}
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends bash ffmpeg espeak \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN cd ${BUILD_PREFIX} \
+    && cp config-template.json config.json \
+    && /usr/local/bin/python -m pip install --no-cache --upgrade pip \
+    && pip install --no-cache -r requirements.txt \
+    && pip install --no-cache -r requirements-optional.txt
+
+WORKDIR ${BUILD_PREFIX}
+
+# 生产环境开启docker后自动运行项目
+ADD docker/entrypoint.sh /entrypoint.sh
+
+# 生产环境使用最小化权限
+RUN chmod +x /entrypoint.sh \
+    && mkdir -p /home/agent/cow \
+    && groupadd -r agent \
+    && useradd -r -g agent -s /bin/bash -d /home/agent agent \
+    && chown -R agent:agent /home/agent ${BUILD_PREFIX} /usr/local/lib
+
+USER agent
+
+ENTRYPOINT ["/entrypoint.sh"]

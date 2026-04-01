@@ -18,7 +18,7 @@ services:
       CLAUDE_API_KEY: ''
       CLAUDE_API_BASE: 'https://api.anthropic.com/v1'
       OPEN_AI_API_KEY: ''
-      OPEN_AI_API_BASE: 'https://api.openai.com/v1'
+      OPEN_AI_API_BASE: 'https://api.siliconflow.cn/v1'
       GEMINI_API_KEY: ''
       GEMINI_API_BASE: 'https://generativelanguage.googleapis.com'
       VOICE_TO_TEXT: 'openai'

@@ -46,6 +46,6 @@ fi
 # go to prefix dir
 cd $CHATGPT_ON_WECHAT_PREFIX
 # excute
-$CHATGPT_ON_WECHAT_EXEC
+# $CHATGPT_ON_WECHAT_EXEC
 
 

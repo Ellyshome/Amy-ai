@@ -1,0 +1,52 @@
+services:
+  amy-dev:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.dev
+      args:
+        APT_MIRROR: mirrors.aliyun.com
+    container_name: amy-dev
+    working_dir: /app
+    entrypoint: ["tail", "-f", "/dev/null"]
+    stdin_open: true
+    tty: true
+    restart: unless-stopped
+    ports:
+      - "9899:9899"
+    volumes:
+      - ..:/app
+      - ./cow:/home/agent/cow
+    environment:
+      OPENAI_API_KEY_0011AI: ${OPENAI_API_KEY_0011AI:-}
+      CHANNEL_TYPE: 'weixin'
+      MODEL: 'MiniMax-M2.7'
+      MINIMAX_API_KEY: ''
+      ZHIPU_AI_API_KEY: ''
+      ARK_API_KEY: ''
+      MOONSHOT_API_KEY: ''
+      DASHSCOPE_API_KEY: ''
+      CLAUDE_API_KEY: ''
+      CLAUDE_API_BASE: 'https://api.anthropic.com/v1'
+      OPEN_AI_API_KEY: ''
+      OPEN_AI_API_BASE: 'https://api.siliconflow.cn/v1'
+      GEMINI_API_KEY: ''
+      GEMINI_API_BASE: 'https://generativelanguage.googleapis.com'
+      VOICE_TO_TEXT: 'openai'
+      TEXT_TO_VOICE: 'openai'
+      VOICE_REPLY_VOICE: 'False'
+      SPEECH_RECOGNITION: 'True'
+      GROUP_SPEECH_RECOGNITION: 'False'
+      USE_LINKAI: 'False'
+      LINKAI_API_KEY: ''
+      LINKAI_APP_CODE: ''
+      FEISHU_APP_ID: ''
+      FEISHU_APP_SECRET: ''
+      DINGTALK_CLIENT_ID: ''
+      DINGTALK_CLIENT_SECRET: ''
+      WECOM_BOT_ID: ''
+      WECOM_BOT_SECRET: ''
+      AGENT: 'True'
+      AGENT_MAX_CONTEXT_TOKENS: 40000
+      AGENT_MAX_CONTEXT_TURNS: 20
+      AGENT_MAX_STEPS: 15
+      PYTHONUNBUFFERED: '1'
