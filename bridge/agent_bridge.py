@@ -19,16 +19,31 @@ from models.openai_compatible_bot import OpenAICompatibleBot
 
 def add_openai_compatible_support(bot_instance):
     """
-    如果某个模型类本身没有 call_with_tools()，但接口风格兼容 OpenAI,就动态给它“补一个会工具调用的能力”。
-    先判断 hasattr(bot_instance, 'call_with_tools')
-    如果已经支持，就直接返回,如果不支持，就动态创建一个 EnhancedBot
-    这个 EnhancedBot 同时继承：原 Bot 类OpenAICompatibleBot
-    然后在 agent_bridge.py (line 56) 直接改：bot_instance.__class__ = EnhancedBot
-    意图是：尽量不改每个模型类本身，就让它们接入 Agent 的 tool calling。
-
-    也就是说，这里解决的是：
-    “原本只能聊天的模型实例，怎么让它也能被 Agent 当成支持工具调用的模型来用？”
-
+    【功能】动态为机器人实例添加 OpenAI 兼容的工具调用支持
+    
+    如果某个模型类本身没有 call_with_tools() 方法，但接口风格兼容 OpenAI，
+    就动态给它添加工具调用的能力。
+    
+    【实现原理】
+    1. 先判断机器人实例是否已经支持工具调用（hasattr(bot_instance, 'call_with_tools')）
+    2. 如果已经支持，直接返回原实例
+    3. 如果不支持，动态创建一个 EnhancedBot 类，同时继承原 Bot 类和 OpenAICompatibleBot
+    4. 修改机器人实例的 __class__ 属性为 EnhancedBot
+    
+    【用途】
+    让原本只能聊天的模型实例也能被 Agent 当成支持工具调用的模型来使用，
+    避免修改每个模型类的代码。
+    
+    【注意】
+    有些机器人（如 ZHIPUAIBot）本身就支持工具调用，不需要增强。
+    
+    【参数】
+    - bot_instance: 机器人实例
+    
+    【返回值】
+    - 增强后的机器人实例（如果需要增强）或原实例（如果已经支持工具调用）
+    """
+    """
     Dynamically add OpenAI-compatible tool calling support to a bot instance.
     
     This allows any bot to gain tool calling capability without modifying its code,
@@ -72,17 +87,23 @@ def add_openai_compatible_support(bot_instance):
 
 class AgentLLMModel(LLMModel):
     """
-    它继承的是 agent.protocol.LLMModel，说明 Agent 框架期望有一个标准的 LLM 抽象；而项目原来已经有自己的 Bot 体系，所以这里要做“协议转换”。
-
-    它的职责是：
-
-    读取当前配置里的模型名，推断应该用哪种 bot 实现
-    创建 bot，必要时给 bot 动态补 tool calling
-    把 Agent 发来的请求转成 bot 的 call_with_tools(...)
-
-    “Agent 世界里的模型对象外观，背后其实用的是项目原有 Bot 实现”
+    【功能】Agent 框架的 LLM 模型适配器，使用 COW 现有的机器人基础设施
+    
+    【继承关系】继承自 agent.protocol.LLMModel
+    
+    【职责】
+    1. 读取当前配置里的模型名，推断应该使用哪种 bot 实现
+    2. 创建 bot 实例，必要时给 bot 动态添加工具调用能力
+    3. 将 Agent 发来的请求转换为 bot 的 call_with_tools(...) 调用
+    
+    【设计理念】
+    作为 Agent 世界里的模型对象外观，背后实际使用的是项目原有的 Bot 实现，
+    实现了 Agent 框架与现有 Bot 体系之间的协议转换。
+    """
+    """
     LLM Model adapter that uses COW's existing bot infrastructure
     """
+
 
     _MODEL_BOT_TYPE_MAP = {
         "wenxin": const.BAIDU, "wenxin-4": const.BAIDU,
@@ -97,6 +118,13 @@ class AgentLLMModel(LLMModel):
     ]
 
     def __init__(self, bridge: Bridge, bot_type: str = "chat"):
+        """
+        【功能】初始化 AgentLLMModel 实例
+        
+        【参数】
+        - bridge: Bridge 实例，用于获取机器人相关配置
+        - bot_type: 机器人类型，默认为 "chat"
+        """
         from config import conf
         super().__init__(model=conf().get("model", const.GPT_41))
         self.bridge = bridge
@@ -106,18 +134,39 @@ class AgentLLMModel(LLMModel):
 
     @property
     def model(self):
+        """
+        【功能】获取当前配置的模型名称
+        
+        【返回值】
+        - 当前配置的模型名称，默认为 GPT_41
+        """
         from config import conf
         return conf().get("model", const.GPT_41)
 
     @model.setter
     def model(self, value):
+        """
+        【功能】设置模型名称（空实现，不做任何操作）
+        
+        【参数】
+        - value: 模型名称
+        """
         pass
 
     def _resolve_bot_type(self, model_name: str) -> str:
         """
-        根据模型名称解析机器人类型，匹配 Bridge.__init__ 逻辑。
+        【功能】根据模型名称解析机器人类型，匹配 Bridge.__init__ 逻辑
+        
+        【参数】
+        - model_name: 模型名称
+        
+        【返回值】
+        - 解析出的机器人类型
+        """
+        """
         Resolve bot type from model name, matching Bridge.__init__ logic.
         """
+
         from config import conf
 
         if conf().get("use_linkai", False) and conf().get("linkai_api_key"):
@@ -146,7 +195,16 @@ class AgentLLMModel(LLMModel):
 
     @property
     def bot(self):
-        """Lazy load the bot, re-create when model changes"""
+        """
+        【功能】懒加载机器人实例，当模型变化时重新创建
+        
+        【返回值】
+        - 机器人实例
+        """
+        """
+        Lazy load the bot, re-create when model changes
+        """
+
         from models.bot_factory import create_bot
         cur_model = self.model
         if self._bot is None or self._bot_model != cur_model:
@@ -158,8 +216,21 @@ class AgentLLMModel(LLMModel):
 
     def call(self, request: LLMRequest):
         """
+        【功能】使用 COW 的机器人基础设施调用模型
+        
+        【参数】
+        - request: LLMRequest 实例，包含调用模型所需的参数
+        
+        【返回值】
+        - 模型的响应
+        
+        【异常】
+        - 如果调用失败，会抛出异常
+        """
+        """
         Call the model using COW's bot infrastructure
         """
+
         try:
             # For non-streaming calls, we'll use the existing reply method
             # This is a simplified implementation
@@ -201,8 +272,21 @@ class AgentLLMModel(LLMModel):
     
     def call_stream(self, request: LLMRequest):
         """
+        【功能】使用 COW 的机器人基础设施以流式方式调用模型
+        
+        【参数】
+        - request: LLMRequest 实例，包含调用模型所需的参数
+        
+        【返回值】
+        - 流式响应的生成器
+        
+        【异常】
+        - 如果调用失败，会抛出异常
+        """
+        """
         Call the model with streaming using COW's bot infrastructure
         """
+
         try:
             if hasattr(self.bot, 'call_with_tools'):
                 # Use tool-enabled streaming call if available
@@ -247,23 +331,61 @@ class AgentLLMModel(LLMModel):
             raise
     
     def _format_response(self, response):
-        """Format Claude response to our expected format"""
+        """
+        【功能】格式化模型响应为预期格式
+        
+        【参数】
+        - response: 模型的原始响应
+        
+        【返回值】
+        - 格式化后的响应
+        """
+        """
+        Format Claude response to our expected format
+        """
         # This would need to be implemented based on Claude's response format
         return response
     
     def _format_stream_chunk(self, chunk):
-        """Format Claude stream chunk to our expected format"""
+        """
+        【功能】格式化模型流式响应的每个块为预期格式
+        
+        【参数】
+        - chunk: 流式响应的一个块
+        
+        【返回值】
+        - 格式化后的响应块
+        """
+        """
+        Format Claude stream chunk to our expected format
+        """
         # This would need to be implemented based on Claude's stream format
         return chunk
 
 
 class AgentBridge:
     """
+    【功能】集成超级 Agent 与 COW 的桥接类
+    
+    【职责】
+    1. 管理每个会话的 Agent 实例，实现会话隔离
+    2. 为 Agent 提供 COW 的机器人基础设施
+    3. 处理 Agent 与 COW 之间的通信
+    4. 管理 Agent 的生命周期和会话状态
+    """
+    """
     Bridge class that integrates super Agent with COW
     Manages multiple agent instances per session for conversation isolation
     """
+
     
     def __init__(self, bridge: Bridge):
+        """
+        【功能】初始化 AgentBridge 实例
+        
+        【参数】
+        - bridge: Bridge 实例，用于获取机器人相关配置
+        """
         self.bridge = bridge
         self.agents = {}  # session_id -> Agent instance mapping
         self.default_agent = None  # For backward compatibility (no session_id)
@@ -273,6 +395,17 @@ class AgentBridge:
         # Create helper instances
         self.initializer = AgentInitializer(bridge, self)
     def create_agent(self, system_prompt: str, tools: List = None, **kwargs) -> Agent:
+        """
+        【功能】创建具有 COW 集成的超级 Agent
+        
+        【参数】
+        - system_prompt: 系统提示
+        - tools: 工具列表（可选）
+        - **kwargs: 其他 Agent 参数
+        
+        【返回值】
+        - Agent 实例
+        """
         """
         Create the super agent with COW integration
         
@@ -284,6 +417,7 @@ class AgentBridge:
         Returns:
             Agent instance
         """
+
         # Create LLM model that uses COW's bot infrastructure
         model = AgentLLMModel(self.bridge)
         
@@ -328,6 +462,15 @@ class AgentBridge:
     
     def get_agent(self, session_id: str = None) -> Optional[Agent]:
         """
+        【功能】获取指定会话的 Agent 实例
+        
+        【参数】
+        - session_id: 会话标识符（例如用户 ID）。如果为 None，返回默认 Agent。
+        
+        【返回值】
+        - 该会话的 Agent 实例
+        """
+        """
         Get agent instance for the given session
         
         Args:
@@ -336,6 +479,7 @@ class AgentBridge:
         Returns:
             Agent instance for this session
         """
+
         # If no session_id, use default agent (backward compatibility)
         if session_id is None:
             if self.default_agent is None:
@@ -349,17 +493,44 @@ class AgentBridge:
         return self.agents[session_id]
     
     def _init_default_agent(self):
-        """Initialize default super agent"""
+        """
+        【功能】初始化默认的超级 Agent
+        """
+        """
+        Initialize default super agent
+        """
+
         agent = self.initializer.initialize_agent(session_id=None)
         self.default_agent = agent
     
     def _init_agent_for_session(self, session_id: str):
-        """Initialize agent for a specific session"""
+        """
+        【功能】为特定会话初始化 Agent
+        
+        【参数】
+        - session_id: 会话标识符
+        """
+        """
+        Initialize agent for a specific session
+        """
+
         agent = self.initializer.initialize_agent(session_id=session_id)
         self.agents[session_id] = agent
     
     def agent_reply(self, query: str, context: Context = None, 
                    on_event=None, clear_history: bool = False) -> Reply:
+        """
+        【功能】使用超级 Agent 回复用户查询
+        
+        【参数】
+        - query: 用户查询
+        - context: COW 上下文（可选，包含用于用户隔离的 session_id）
+        - on_event: 事件回调（可选）
+        - clear_history: 是否清除对话历史
+        
+        【返回值】
+        - Reply 对象
+        """
         """
         Use super agent to reply to a query
         
@@ -372,6 +543,7 @@ class AgentBridge:
         Returns:
             Reply object
         """
+
         session_id = None
         agent = None
         try:
@@ -482,6 +654,17 @@ class AgentBridge:
     
     def _create_file_reply(self, file_info: dict, text_response: str, context: Context = None) -> Reply:
         """
+        【功能】创建用于发送文件的回复
+        
+        【参数】
+        - file_info: 来自读取工具的文件元数据
+        - text_response: Agent 的文本响应
+        - context: 上下文对象
+        
+        【返回值】
+        - 用于文件发送的 Reply 对象
+        """
+        """
         Create a reply for sending files
         
         Args:
@@ -492,6 +675,7 @@ class AgentBridge:
         Returns:
             Reply object for file sending
         """
+
         file_type = file_info.get("file_type", "file")
         file_path = file_info.get("path")
         
@@ -524,11 +708,18 @@ class AgentBridge:
     
     def _migrate_config_to_env(self, workspace_root: str):
         """
+        【功能】将 API 密钥从 config.json 迁移到 .env 文件（如果尚未设置）
+        
+        【参数】
+        - workspace_root: 工作区目录路径（未使用，保留以保持兼容性）
+        """
+        """
         Migrate API keys from config.json to .env file if not already set
         
         Args:
             workspace_root: Workspace directory path (not used, kept for compatibility)
         """
+
         from config import conf
         import os
         
@@ -599,10 +790,22 @@ class AgentBridge:
         self, session_id: str, new_messages: list, channel_type: str = ""
     ) -> None:
         """
+        【功能】在每次 Agent 运行后将新消息持久化到对话存储中
+        
+        【参数】
+        - session_id: 会话标识符
+        - new_messages: 新消息列表
+        - channel_type: 通道类型（可选）
+        
+        【注意】
+        失败会被记录但不会传播 — 它们不得中断回复
+        """
+        """
         Persist new messages to the conversation store after each agent run.
 
         Failures are logged but never propagate — they must not interrupt replies.
         """
+
         if not new_messages:
             return
         try:
@@ -623,22 +826,44 @@ class AgentBridge:
 
     def clear_session(self, session_id: str):
         """
+        【功能】清除特定会话的 Agent 和对话历史
+        
+        【参数】
+        - session_id: 要清除的会话标识符
+        """
+        """
         Clear a specific session's agent and conversation history
         
         Args:
             session_id: Session identifier to clear
         """
+
         if session_id in self.agents:
             logger.info(f"[AgentBridge] Clearing session: {session_id}")
             del self.agents[session_id]
     
     def clear_all_sessions(self):
-        """Clear all agent sessions"""
+        """
+        【功能】清除所有 Agent 会话
+        """
+        """
+        Clear all agent sessions
+        """
+
         logger.info(f"[AgentBridge] Clearing all sessions ({len(self.agents)} total)")
         self.agents.clear()
         self.default_agent = None
     
     def refresh_all_skills(self) -> int:
+        """
+        【功能】在环境变量变化后刷新所有 Agent 实例中的技能和条件工具
+        
+        【作用】
+        允许在不重启的情况下热重载技能和工具
+        
+        【返回值】
+        - 刷新的 Agent 实例数量
+        """
         """
         Refresh skills and conditional tools in all agent instances after
         environment variable changes. This allows hot-reload without restarting.
@@ -646,6 +871,7 @@ class AgentBridge:
         Returns:
             Number of agent instances refreshed
         """
+
         import os
         from dotenv import load_dotenv
         from config import conf
@@ -685,10 +911,20 @@ class AgentBridge:
     @staticmethod
     def _refresh_conditional_tools(agent):
         """
+        【功能】根据当前环境变量添加或移除条件工具
+        
+        【作用】
+        例如，只有当设置了 BOCHA_API_KEY 或 LINKAI_API_KEY 时，才应该存在 web_search 工具
+        
+        【参数】
+        - agent: 要刷新条件工具的 Agent 实例
+        """
+        """
         Add or remove conditional tools based on current environment variables.
         For example, web_search should only be present when BOCHA_API_KEY or
         LINKAI_API_KEY is set.
         """
+
         try:
             from agent.tools.web_search.web_search import WebSearch
 

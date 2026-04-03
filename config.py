@@ -9,7 +9,7 @@ import pickle
 from common.log import logger
 
 # 将所有可用的配置项写在字典里, 请使用小写字母
-# 此处的配置值无实际意义，程序不会读取此处的配置，仅用于提示格式，请将配置加入到config.json中
+
 available_setting = {
     # openai api配置
     "open_ai_api_key": "",  # openai api key
