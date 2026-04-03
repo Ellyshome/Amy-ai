@@ -19,6 +19,16 @@ from models.openai_compatible_bot import OpenAICompatibleBot
 
 def add_openai_compatible_support(bot_instance):
     """
+    如果某个模型类本身没有 call_with_tools()，但接口风格兼容 OpenAI,就动态给它“补一个会工具调用的能力”。
+    先判断 hasattr(bot_instance, 'call_with_tools')
+    如果已经支持，就直接返回,如果不支持，就动态创建一个 EnhancedBot
+    这个 EnhancedBot 同时继承：原 Bot 类OpenAICompatibleBot
+    然后在 agent_bridge.py (line 56) 直接改：bot_instance.__class__ = EnhancedBot
+    意图是：尽量不改每个模型类本身，就让它们接入 Agent 的 tool calling。
+
+    也就是说，这里解决的是：
+    “原本只能聊天的模型实例，怎么让它也能被 Agent 当成支持工具调用的模型来用？”
+
     Dynamically add OpenAI-compatible tool calling support to a bot instance.
     
     This allows any bot to gain tool calling capability without modifying its code,
@@ -62,6 +72,15 @@ def add_openai_compatible_support(bot_instance):
 
 class AgentLLMModel(LLMModel):
     """
+    它继承的是 agent.protocol.LLMModel，说明 Agent 框架期望有一个标准的 LLM 抽象；而项目原来已经有自己的 Bot 体系，所以这里要做“协议转换”。
+
+    它的职责是：
+
+    读取当前配置里的模型名，推断应该用哪种 bot 实现
+    创建 bot，必要时给 bot 动态补 tool calling
+    把 Agent 发来的请求转成 bot 的 call_with_tools(...)
+
+    “Agent 世界里的模型对象外观，背后其实用的是项目原有 Bot 实现”
     LLM Model adapter that uses COW's existing bot infrastructure
     """
 
@@ -95,7 +114,10 @@ class AgentLLMModel(LLMModel):
         pass
 
     def _resolve_bot_type(self, model_name: str) -> str:
-        """Resolve bot type from model name, matching Bridge.__init__ logic."""
+        """
+        根据模型名称解析机器人类型，匹配 Bridge.__init__ 逻辑。
+        Resolve bot type from model name, matching Bridge.__init__ logic.
+        """
         from config import conf
 
         if conf().get("use_linkai", False) and conf().get("linkai_api_key"):

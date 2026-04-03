@@ -23,9 +23,11 @@ ADD . ${BUILD_PREFIX}
 
 
 RUN cd ${BUILD_PREFIX} \
-    && cp config-template.json config.json \
-    && /usr/local/bin/python -m pip install --no-cache-dir uv
-    # -i https://mirrors.aliyun.com/pypi/simple/ --trusted-host mirrors.aliyun.com
+    && /usr/local/bin/python -m pip install --upgrade pip \
+    && /usr/local/bin/python -m pip install uv \
+        --no-cache-dir \
+        --force-reinstall \
+        -i https://pypi.tuna.tsinghua.edu.cn/simple
 
 WORKDIR ${BUILD_PREFIX}
 
@@ -34,7 +36,7 @@ WORKDIR ${BUILD_PREFIX}
 # 开发环境卓nodejs
 RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
     && apt-get update \
-    && apt-get install -y --no-install-recommends nodejs \
+    && apt-get install -y --no-install-recommends nodejs git \
     && npm install -g @openai/codex@latest \
     && rm -rf /var/lib/apt/lists/*
 RUN mkdir -p /root/.codex
