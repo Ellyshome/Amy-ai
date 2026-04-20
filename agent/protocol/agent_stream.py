@@ -17,16 +17,16 @@ class AgentStreamExecutor:
     """
     Agent Stream Executor
     
-    Handles multi-turn reasoning loop based on tool-call:
-    1. LLM generates response (may include tool calls)
-    2. Execute tools
-    3. Return results to LLM
-    4. Repeat until no more tool calls
+    基于工具调用的多轮推理循环处理器：
+    1. LLM生成响应（可能包含工具调用）
+    2. 执行工具
+    3. 将结果返回给LLM
+    4. 重复直到没有更多工具调用
     """
 
     def __init__(
             self,
-            agent,  # Agent instance
+            agent,  # Agent实例
             model: LLMModel,
             system_prompt: str,
             tools: List[BaseTool],
@@ -36,17 +36,17 @@ class AgentStreamExecutor:
             max_context_turns: int = 30
     ):
         """
-        Initialize stream executor
+        初始化流执行器
         
-        Args:
-            agent: Agent instance (for accessing context)
-            model: LLM model
-            system_prompt: System prompt
-            tools: List of available tools
-            max_turns: Maximum number of turns
-            on_event: Event callback function
-            messages: Optional existing message history (for persistent conversations)
-            max_context_turns: Maximum number of conversation turns to keep in context
+        参数:
+            agent: Agent实例（用于访问上下文）
+            model: LLM模型
+            system_prompt: 系统提示
+            tools: 可用工具列表
+            max_turns: 最大轮次数量
+            on_event: 事件回调函数
+            messages: 可选的现有消息历史（用于持久化对话）
+            max_context_turns: 要保存在上下文中的最大对话轮次数量
         """
         self.agent = agent
         self.model = model
@@ -67,7 +67,7 @@ class AgentStreamExecutor:
         self.files_to_send = []  # List of file metadata dicts
 
     def _emit_event(self, event_type: str, data: dict = None):
-        """Emit event"""
+        """发出事件"""
         if self.on_event:
             try:
                 self.on_event({
@@ -76,13 +76,13 @@ class AgentStreamExecutor:
                     "data": data or {}
                 })
             except Exception as e:
-                logger.error(f"Event callback error: {e}")
+                logger.error(f"事件回调错误: {e}")
     
     def _filter_think_tags(self, text: str) -> str:
         """
-        Remove <think> and </think> tags but keep the content inside.
-        Some LLM providers (e.g., MiniMax) may return thinking process wrapped in <think> tags.
-        We only remove the tags themselves, keeping the actual thinking content.
+        移除<think>和</think>标签但保留内部内容。
+        一些LLM提供商（例如MiniMax）可能会返回用<think>标签包裹的思考过程。
+        我们只移除标签本身，保留实际的思考内容。
         """
         if not text:
             return text
@@ -93,7 +93,7 @@ class AgentStreamExecutor:
         return text
 
     def _hash_args(self, args: dict) -> str:
-        """Generate a simple hash for tool arguments"""
+        """为工具参数生成简单哈希值"""
         import hashlib
         # Sort keys for consistent hashing
         args_str = json.dumps(args, sort_keys=True, ensure_ascii=False)
@@ -101,13 +101,13 @@ class AgentStreamExecutor:
     
     def _check_consecutive_failures(self, tool_name: str, args: dict) -> Tuple[bool, str, bool]:
         """
-        Check if tool has failed too many times consecutively or called repeatedly with same args
+        检查工具是否连续失败次数过多或使用相同参数重复调用
         
-        Returns:
+        返回值:
             (should_stop, reason, is_critical)
-            - should_stop: Whether to stop tool execution
-            - reason: Reason for stopping
-            - is_critical: Whether to abort entire conversation (True for 8+ failures)
+            - should_stop: 是否停止工具执行
+            - reason: 停止的原因
+            - is_critical: 是否终止整个对话（8次以上失败时为True）
         """
         args_hash = self._hash_args(args)
         
@@ -160,7 +160,7 @@ class AgentStreamExecutor:
         return False, "", False
     
     def _record_tool_result(self, tool_name: str, args: dict, success: bool):
-        """Record tool execution result for failure tracking"""
+        """记录工具执行结果用于失败跟踪"""
         args_hash = self._hash_args(args)
         self.tool_failure_history.append((tool_name, args_hash, success))
         # Keep only last 50 records to avoid memory bloat
@@ -169,13 +169,13 @@ class AgentStreamExecutor:
 
     def run_stream(self, user_message: str) -> str:
         """
-        Execute streaming reasoning loop
+        执行流式推理循环
         
-        Args:
-            user_message: User message
+        参数:
+            user_message: 用户消息
             
-        Returns:
-            Final response text
+        返回值:
+            最终响应文本
         """
         # Log user message with model info
         logger.info(f"🤖 {self.model.model} | 👤 {user_message}")
@@ -480,16 +480,16 @@ class AgentStreamExecutor:
     def _call_llm_stream(self, retry_on_empty=True, retry_count=0, max_retries=3,
                          _overflow_retry: bool = False) -> Tuple[str, List[Dict]]:
         """
-        Call LLM with streaming and automatic retry on errors
+        使用流式调用LLM并在错误时自动重试
         
-        Args:
-            retry_on_empty: Whether to retry once if empty response is received
-            retry_count: Current retry attempt (internal use)
-            max_retries: Maximum number of retries for API errors
-            _overflow_retry: Internal flag indicating this is a retry after context overflow
+        参数:
+            retry_on_empty: 如果收到空响应是否重试一次
+            retry_count: 当前重试次数（内部使用）
+            max_retries: API错误的最大重试次数
+            _overflow_retry: 内部标志，表示这是上下文溢出后的重试
         
-        Returns:
-            (response_text, tool_calls)
+        返回值:
+            (response_text, tool_calls) - (响应文本, 工具调用列表)
         """
         # Validate and fix message history (e.g. orphaned tool_result blocks).
         # Context trimming is done once in run_stream() before the loop starts,
@@ -820,13 +820,13 @@ class AgentStreamExecutor:
 
     def _execute_tool(self, tool_call: Dict) -> Dict[str, Any]:
         """
-        Execute tool
+        执行工具
         
-        Args:
-            tool_call: {"id": str, "name": str, "arguments": dict}
+        参数:
+            tool_call: {"id": str, "name": str, "arguments": dict} - 工具调用信息
             
-        Returns:
-            Tool execution result
+        返回值:
+            工具执行结果
         """
         tool_name = tool_call["name"]
         tool_id = tool_call["id"]
@@ -930,10 +930,9 @@ class AgentStreamExecutor:
             return error_result
 
     def _build_tool_not_found_message(self, tool_name: str) -> str:
-        """Build a helpful error message when a tool is not found.
+        """当找不到工具时构建有帮助的错误消息。
 
-        If a skill with the same name exists in skill_manager, read its
-        SKILL.md and include the content so the LLM knows how to use it.
+        如果skill_manager中存在同名的技能，会读取其SKILL.md并包含内容，以便LLM知道如何使用它。
         """
         available_tools = list(self.tools.keys())
         base_msg = f"Tool '{tool_name}' not found. Available tools: {available_tools}"
@@ -1039,12 +1038,12 @@ class AgentStreamExecutor:
 
     def _truncate_historical_tool_results(self):
         """
-        Truncate tool_result content in historical messages to reduce context size.
+        截断历史消息中的tool_result内容以减少上下文大小。
 
-        Current turn results are kept at 30K chars (truncated at creation time).
-        Historical turn results are further truncated to 10K chars here.
-        This runs before token-based trimming so that we first shrink oversized
-        results, potentially avoiding the need to drop entire turns.
+        当前轮次结果保持在30K字符（在创建时截断）。
+        历史轮次结果在这里进一步截断为20K字符。
+        这在基于token的截断之前运行，以便我们首先缩小过大的结果，
+        可能避免需要丢弃整个轮次。
         """
         MAX_HISTORY_RESULT_CHARS = 20000
 
@@ -1091,15 +1090,15 @@ class AgentStreamExecutor:
 
     def _aggressive_trim_for_overflow(self) -> bool:
         """
-        Aggressively trim context when a real overflow error is returned by the API.
+        当API返回实际溢出错误时，积极地修剪上下文。
 
-        This method goes beyond normal _trim_messages by:
-        1. Truncating all tool results (including current turn) to a small limit
-        2. Keeping only the last 5 complete conversation turns
-        3. Truncating overly long user messages
+        此方法超出了正常的_trim_messages功能：
+        1. 将所有工具结果（包括当前轮次）截断到较小的限制
+        2. 只保留最后5个完整的对话轮次
+        3. 截断过长的用户消息
 
-        Returns:
-            True if messages were trimmed (worth retrying), False if nothing left to trim
+        返回值:
+            如果消息被修剪（值得重试）则返回True，如果没有可修剪的内容则返回False
         """
         if not self.messages:
             return False
@@ -1345,10 +1344,9 @@ class AgentStreamExecutor:
 
     def _clear_session_db(self):
         """
-        Clear the current session's persisted messages from SQLite DB.
+        从SQLite DB中清除当前会话的持久化消息。
 
-        This prevents dirty data (broken tool_use/tool_result pairs) from being
-        reloaded on the next request or after a restart.
+        这可以防止脏数据（损坏的tool_use/tool_result对）在下次请求或重启后被重新加载。
         """
         try:
             session_id = getattr(self.agent, '_current_session_id', None)
@@ -1363,10 +1361,10 @@ class AgentStreamExecutor:
 
     def _prepare_messages(self) -> List[Dict[str, Any]]:
         """
-        Prepare messages to send to LLM
+        准备要发送给LLM的消息
         
-        Note: For Claude API, system prompt should be passed separately via system parameter,
-        not as a message. The AgentLLMModel will handle this.
+        注意：对于Claude API，系统提示应该通过system参数单独传递，
+        而不是作为消息的一部分。AgentLLMModel将处理这个问题。
         """
         # Don't add system message here - it will be handled separately by the LLM adapter
         return self.messages
