@@ -37,3 +37,15 @@ client_config.json
 ref/
 .cursor/
 local/
+
+# Docker env
+.env
+docker/.env
+
+# SQLite wallet files
+*.db-shm
+*.db-wal
+
+# Legacy
+old/
+chatgpt-on-wechat/

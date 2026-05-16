@@ -1,43 +1,33 @@
 FROM python:3.10-slim-bullseye
 
 ARG TZ='Asia/Shanghai'
-
-ARG CHATGPT_ON_WECHAT_VER
 ARG APT_MIRROR=''
-USER root
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV BUILD_PREFIX=/app
+ENV VIRTUAL_ENV=/opt/venv
+ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
+WORKDIR ${BUILD_PREFIX}
+
+# 系统依赖
 RUN if [ -n "${APT_MIRROR}" ] && [ -f /etc/apt/sources.list ]; then \
         sed -i "s|deb.debian.org|${APT_MIRROR}|g" /etc/apt/sources.list; \
         sed -i "s|security.debian.org|${APT_MIRROR}|g" /etc/apt/sources.list; \
     fi \
- && apt-get update --fix-missing \
- && apt-get install -y --no-install-recommends curl ca-certificates gnupg \
- && rm -rf /var/lib/apt/lists/*
+    && apt-get update --fix-missing \
+    && apt-get install -y --no-install-recommends curl ca-certificates git \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-
-
-ADD . ${BUILD_PREFIX}
-
-
-RUN cd ${BUILD_PREFIX} \
-    && /usr/local/bin/python -m pip install --upgrade pip \
-    && /usr/local/bin/python -m pip install uv \
-        --no-cache-dir \
-        --force-reinstall \
+# uv 包管理器
+RUN /usr/local/bin/python -m pip install --upgrade pip \
+    && /usr/local/bin/python -m pip install "uv>=0.5" --no-cache-dir \
         -i https://pypi.tuna.tsinghua.edu.cn/simple
 
-WORKDIR ${BUILD_PREFIX}
+# venv 放在 /opt 避开 volume 挂载
+RUN uv venv /opt/venv
 
-# ADD docker/entrypoint.sh /entrypoint.sh
-
-# 开发环境卓nodejs
-RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
-    && apt-get update \
-    && apt-get install -y --no-install-recommends nodejs git \
-    && npm install -g @openai/codex@latest \
-    && rm -rf /var/lib/apt/lists/*
-RUN mkdir -p /root/.codex
-ADD ./config.toml /root/.codex/config.toml
+# 复制项目并安装依赖
+COPY . ${BUILD_PREFIX}
+RUN uv sync --frozen --no-install-project --active
