@@ -930,8 +930,8 @@ class AgentStreamExecutor:
             return error_result
 
     def _build_tool_not_found_message(self, tool_name: str) -> str:
-        """当找不到工具时构建有帮助的错误消息。
-
+        """
+        当找不到工具时构建有帮助的错误消息。
         如果skill_manager中存在同名的技能，会读取其SKILL.md并包含内容，以便LLM知道如何使用它。
         """
         available_tools = list(self.tools.keys())
@@ -970,7 +970,8 @@ class AgentStreamExecutor:
         )
 
     def _validate_and_fix_messages(self):
-        """Delegate to the shared sanitizer (see message_sanitizer.py)."""
+        """Delegate to the shared sanitizer (see message_sanitizer.py). 
+        / 委托给共享的清理器（参见 message_sanitizer.py）。"""
         sanitize_claude_messages(self.messages)
 
     def _identify_complete_turns(self) -> List[Dict]:
