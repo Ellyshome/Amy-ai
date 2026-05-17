@@ -125,6 +125,14 @@ class TerminalChannel(ChatChannel):
 
             # 将用户输入构建为消息上下文，包含消息类型、内容、消息对象等
             context = self._compose_context(ContextType.TEXT, prompt, msg=TerminalMessage(msg_id, prompt))
+            '''
+            _compose_context() 是 ChatChannel 基类的方法，它内部会完成：
+            设置 session_id(区分不同用户的会话)
+            匹配触发前缀，提取实际查询内容
+            检查限流(token bucket)
+            触发 ON_HANDLE_CONTEXT 插件钩子，让插件有机会修改或拦截消息
+            返回构建好的 Context 对象，如果消息不应处理则返回 None
+            '''
             context["isgroup"] = False  # 终端模式为私聊，非群聊
             if context:
                 # 将上下文投入消息队列，由 ChatChannel 的消费线程异步处理
