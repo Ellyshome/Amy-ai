@@ -1,4 +1,9 @@
 # encoding:utf-8
+"""
+插件管理器，负责插件的扫描、加载、生命周期管理与事件分发
+采用优先级排序+责任链模式，按优先级依次触发插件处理，支持中断与跳过默认逻辑
+核心：PluginManager单例（scan/activate/emit_event/enable/disable/install/uninstall）
+"""
 
 import importlib
 import importlib.util

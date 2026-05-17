@@ -1,3 +1,10 @@
+"""
+工具基类，定义Agent可调用工具的统一接口与生命周期。
+通过ToolStage区分主动调用（PRE_PROCESS）与自动执行（POST_PROCESS），
+所有内置工具继承BaseTool并实现execute方法。
+核心类：ToolStage、ToolResult、BaseTool
+"""
+
 from enum import Enum
 from typing import Any, Optional
 from common.log import logger

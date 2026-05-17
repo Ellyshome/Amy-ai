@@ -1,3 +1,9 @@
+"""
+插件基类，定义所有插件的公共行为与配置管理接口
+将配置加载/持久化抽象为基类方法，使各插件专注业务逻辑
+核心：Plugin类（handlers注册、load_config/save_config配置读写）
+"""
+
 import os
 import json
 from config import pconf, plugin_config, conf, write_plugin_config

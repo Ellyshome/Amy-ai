@@ -1,4 +1,9 @@
 # encoding:utf-8
+"""
+回复类型与回复容器定义，枚举所有支持的回复格式。
+Reply 将回复类型(文本/语音/图片/文件/错误等)与内容封装为统一对象，是Bot向频道返回结果的标准结构。
+核心: ReplyType 枚举, Reply 类
+"""
 
 from enum import Enum
 

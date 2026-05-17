@@ -25,8 +25,11 @@ RUN /usr/local/bin/python -m pip install --upgrade pip \
     && /usr/local/bin/python -m pip install "uv>=0.5" --no-cache-dir \
         -i https://pypi.tuna.tsinghua.edu.cn/simple
 
-# venv 放在 /opt 避开 volume 挂载
+# venv 放在 /opt 避开 volume 挂载，构建时预装依赖
 RUN uv venv /opt/venv
+
+COPY pyproject.toml uv.lock ./
+RUN uv sync --frozen --no-install-project --active
 
 # 启动脚本
 COPY docker/entrypoint-dev.sh /entrypoint.sh

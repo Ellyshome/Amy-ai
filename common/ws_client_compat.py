@@ -1,3 +1,8 @@
+"""
+WebSocket客户端兼容层，屏蔽不同版本websocket-client的API差异。
+旧版不支持reconnect参数，本模块通过运行时签名检查自动剔除不兼容参数。
+核心函数：websocket_app_run_forever，被飞书/钉钉等通道的WebSocket连接使用。
+"""
 import inspect
 from typing import Any
 

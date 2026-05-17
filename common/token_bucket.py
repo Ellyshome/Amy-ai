@@ -1,3 +1,8 @@
+"""
+令牌桶限流器，按TPM(tokens per minute)匀速生成令牌，控制API调用频率。
+独立线程以固定速率补充令牌，消费方通过get_token阻塞获取，支持超时机制。
+核心类：TokenBucket，适用于LLM API等需要按速率限流的场景。
+"""
 import threading
 import time
 

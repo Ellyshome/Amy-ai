@@ -1,3 +1,9 @@
+"""
+会话管理模块，负责多轮对话上下文的存储与TTL过期清理
+将Session与SessionManager分离，使会话生命周期管理与具体Bot解耦
+核心类：Session（单次会话消息列表与token裁剪）、SessionManager（带过期的会话池）
+"""
+
 from common.expired_dict import ExpiredDict
 from common.log import logger
 from config import conf

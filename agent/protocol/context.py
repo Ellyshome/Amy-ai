@@ -1,3 +1,10 @@
+"""
+Agent上下文定义，承载多Agent协作时的共享状态。
+将团队级信息（名称、规则、Agent列表）与单次任务输出分离，
+便于在不同执行阶段传递和扩展上下文。
+核心类：TeamContext、AgentOutput
+"""
+
 class TeamContext:
     def __init__(self, name: str, description: str, rule: str, agents: list, max_steps: int = 100):
         """

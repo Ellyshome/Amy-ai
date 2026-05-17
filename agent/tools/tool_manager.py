@@ -1,3 +1,10 @@
+"""
+工具管理器，以单例模式注册和实例化所有工具类。
+按需从目录或包动态加载工具，延迟实例化以支持配置注入，
+屏蔽工具发现与初始化细节，上层只需按名称获取工具实例。
+核心类：ToolManager
+"""
+
 import importlib
 import importlib.util
 from pathlib import Path

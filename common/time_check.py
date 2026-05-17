@@ -1,3 +1,8 @@
+"""
+服务时间窗口检查装饰器，控制机器人仅在配置时段内响应消息。
+time_checker装饰器读取chat_start_time/chat_stop_time配置，超时则拦截并记录日志。
+支持跨天时段(如22:00-08:00)及#reconf管理命令豁免，用于生产环境的服务时间管控。
+"""
 import re
 import time
 import config

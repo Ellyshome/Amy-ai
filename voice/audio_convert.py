@@ -1,3 +1,9 @@
+"""
+语音格式转换工具模块，位于voice子系统的底层基础设施层
+独立于具体TTS/ASR提供商，为各语音通道提供统一的音频格式互转能力
+核心函数：any_to_mp3/wav/sil/amr 统一入口转换，sil_to_wav 专解Silk格式，split_audio 分段切割
+"""
+
 import shutil
 import wave
 

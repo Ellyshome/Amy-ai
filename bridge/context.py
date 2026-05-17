@@ -1,4 +1,9 @@
 # encoding:utf-8
+"""
+消息上下文容器，定义消息类型枚举与上下文数据结构。
+Context 将消息类型、内容和扩展参数封装为统一对象，供频道与Bot之间传递使用。
+核心: ContextType 枚举, Context 类(支持 dict 式属性访问)
+"""
 
 from enum import Enum
 

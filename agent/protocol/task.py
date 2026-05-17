@@ -1,3 +1,10 @@
+"""
+Agent任务定义，抽象用户请求为可追踪的结构化任务。
+独立于具体执行逻辑，使任务可携带多模态内容（文本/图片/音视频/文件）
+并在不同阶段流转状态。
+核心类：TaskType、TaskStatus、Task
+"""
+
 from __future__ import annotations
 import time
 import uuid

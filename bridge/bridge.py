@@ -1,3 +1,9 @@
+"""
+消息路由中枢，根据配置将消息分发到对应 Bot/语音/翻译引擎。
+单例模式确保全局唯一路由实例，同时支持传统对话模式与 Agent 模式的切换。
+核心类: Bridge(单例)，负责 fetch_reply_content/fetch_voice_to_text/fetch_agent_reply
+"""
+
 from models.bot_factory import create_bot
 from bridge.context import Context
 from bridge.reply import Reply

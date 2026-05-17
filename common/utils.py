@@ -1,3 +1,8 @@
+"""
+通用工具函数集合，提供文件大小获取、图片压缩、字符串按UTF8长度切分、路径扩展等基础能力。
+各函数独立无副作用，被通道层、Agent工具层等多处调用。
+主要函数：fsize/compress_imgfile/split_string_by_utf8_length/expand_path/get_cloud_headers。
+"""
 import io
 import os
 import re

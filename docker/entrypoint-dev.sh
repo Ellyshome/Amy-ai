@@ -12,11 +12,15 @@ fi
 STORED_HASH=$(cat "$HASH_FILE" 2>/dev/null || echo "")
 
 if [ "$CURRENT_HASH" != "$STORED_HASH" ] || [ ! -d "$VIRTUAL_ENV/bin" ]; then
-    echo "[entrypoint] Dependencies changed or venv missing, installing..."
-    cd /app
-    uv sync --frozen --no-install-project --active
-    echo "$CURRENT_HASH" > "$HASH_FILE"
-    echo "[entrypoint] Done."
+    if [ ! -f /app/pyproject.toml ] || [ ! -f /app/uv.lock ]; then
+        echo "[entrypoint] Dependency files missing, skipping install."
+    else
+        echo "[entrypoint] Dependencies changed or venv missing, installing..."
+        cd /app
+        uv sync --frozen --no-install-project --active
+        echo "$CURRENT_HASH" > "$HASH_FILE"
+        echo "[entrypoint] Done."
+    fi
 else
     echo "[entrypoint] Dependencies unchanged, skipping install."
 fi

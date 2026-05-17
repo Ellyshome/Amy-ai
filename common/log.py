@@ -1,3 +1,8 @@
+"""
+全局日志初始化模块，统一配置日志格式、输出目标与级别。
+同时输出到控制台(stdout)与run.log文件，格式为[级别][时间][文件:行号] - 消息。
+暴露logger句柄供全项目使用，并提供_reset_logger用于pip安装后重置被覆盖的日志配置。
+"""
 import logging
 import sys
 

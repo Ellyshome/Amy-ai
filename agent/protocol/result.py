@@ -1,3 +1,10 @@
+"""
+Agent执行结果的数据模型，记录动作类型与工具调用详情。
+将动作（AgentAction）与结果（AgentResult）分离，
+使上层可独立消费步骤轨迹与最终答案。
+核心类：AgentActionType、ToolResult、AgentAction、AgentResult
+"""
+
 from __future__ import annotations
 import time
 import uuid

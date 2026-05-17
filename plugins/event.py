@@ -1,4 +1,9 @@
 # encoding:utf-8
+"""
+插件事件体系，定义消息处理管线中的拦截点与控制流
+采用事件驱动架构，使插件可在不修改核心逻辑的前提下介入处理流程
+核心：Event枚举（4个钩子阶段）、EventAction（继续/中断/跳过默认）、EventContext
+"""
 
 from enum import Enum
 

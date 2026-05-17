@@ -1,3 +1,8 @@
+"""
+包管理工具，封装pip安装与依赖检查能力。
+提供install/install_requirements快捷方法及check_dulwich(含重试)等运行时依赖检测。
+用于插件热加载、Git操作等需要动态安装Python包的场景。
+"""
 import time
 
 import pip

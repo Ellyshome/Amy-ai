@@ -1,4 +1,9 @@
 # encoding:utf-8
+"""
+全局配置中心，定义所有可用配置项及其默认值，提供配置加载与环境变量覆盖。
+Config 类继承 dict，支持用户数据持久化与敏感信息脱敏；load_config() 完成初始化流程。
+核心: available_setting 字典, Config 类, load_config()/conf() 函数
+"""
 
 import copy
 import json

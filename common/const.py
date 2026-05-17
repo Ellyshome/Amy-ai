@@ -1,3 +1,8 @@
+"""
+全局常量定义，集中管理厂商类型、通道类型及模型名称列表。
+将散落各处的字面量收归一处，避免魔法字符串，新增模型/通道只需在此追加。
+定义厂商标识(OPEN_AI/CLAUDEAPI等)、通道标识(FEISHU/DINGTALK等)及MODEL_LIST汇总列表。
+"""
 # 厂商类型
 OPEN_AI = "openAI"
 OPENAI = "openai"

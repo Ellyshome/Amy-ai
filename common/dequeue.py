@@ -1,3 +1,8 @@
+"""
+扩展队列，在标准Queue基础上增加优先入队(putleft)能力。
+管理命令等高优先级消息可插队到队首优先处理，普通消息仍走正常入队。
+核心类：Dequeue，提供putleft/putleft_nowait方法，被ChatChannel消息队列使用。
+"""
 from queue import Full, Queue
 from time import monotonic as time
 

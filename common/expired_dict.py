@@ -1,3 +1,8 @@
+"""
+带TTL的字典，键值对在设定秒数后自动过期失效。
+继承dict并重写__getitem__/__setitem__，读写时透明检查过期，用于会话缓存、限流记录等场景。
+核心类：ExpiredDict，支持get/contains/keys/items等常用操作并自动淘汰过期条目。
+"""
 from datetime import datetime, timedelta
 
 
