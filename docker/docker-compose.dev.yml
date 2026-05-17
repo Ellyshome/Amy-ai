@@ -7,7 +7,6 @@ services:
         APT_MIRROR: mirrors.aliyun.com
     container_name: amy-dev
     working_dir: /app
-    entrypoint: ["tail", "-f", "/dev/null"]
     stdin_open: true
     tty: true
     restart: unless-stopped
@@ -16,6 +15,7 @@ services:
     volumes:
       - ..:/app
       - ./cow:/home/agent/cow
+      - venv-data:/opt/venv
     environment:
       # DeepSeek API（OpenAI 兼容通道）
       OPEN_AI_API_KEY: ${DEEPSEEK_API_KEY:-}
@@ -31,3 +31,6 @@ services:
       AGENT_MAX_STEPS: ${AGENT_MAX_STEPS:-15}
       # 运行时
       PYTHONUNBUFFERED: '1'
+
+volumes:
+  venv-data:

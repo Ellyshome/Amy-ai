@@ -28,6 +28,9 @@ RUN /usr/local/bin/python -m pip install --upgrade pip \
 # venv 放在 /opt 避开 volume 挂载
 RUN uv venv /opt/venv
 
-# 复制项目并安装依赖
-COPY . ${BUILD_PREFIX}
-RUN uv sync --frozen --no-install-project --active
+# 启动脚本
+COPY docker/entrypoint-dev.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+ENTRYPOINT ["/entrypoint.sh"]
+CMD ["tail", "-f", "/dev/null"]

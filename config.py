@@ -299,10 +299,10 @@ def load_config():
     # 打印 ASCII Logo
 
     logger.info("Amy Bot Starting...")
-    config_path = "./config.json"
+    config_path = os.path.join(get_root(), "config.json")
     if not os.path.exists(config_path):
         logger.info("配置文件不存在，将使用config-template.json模板")
-        config_path = "./config-template.json"
+        config_path = os.path.join(get_root(), "config-template.json")
 
     config_str = read_file(config_path)
     logger.debug("[INIT] config str: {}".format(drag_sensitive(config_str)))
