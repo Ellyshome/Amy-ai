@@ -1,39 +1,58 @@
 ---
-title: 一键安装
-description: 使用脚本一键安装和管理 CowAgent
+title: 快速开始
+description: CowAgent 安装和运行指南
 ---
 
-项目提供了一键安装、配置、启动、管理程序的脚本，推荐使用脚本快速运行。
+支持 Linux、macOS、Windows 操作系统，需安装 Python 3.10+。
 
-支持 Linux、macOS、Windows 操作系统，需安装 Python 3.7 ~ 3.12（推荐 3.9）。
+## 环境准备
 
-## 安装命令
+**安装 uv 包管理器：**
 
 ```bash
-bash <(curl -fsSL https://cdn.link-ai.tech/code/cow/run.sh)
+# macOS / Linux
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# Windows
+powershell -c "irm https://astral.sh/uv/install.ps1 | iex"
 ```
 
-脚本自动执行以下流程：
+## 安装步骤
 
-1. 检查 Python 环境（需要 Python 3.7+）
-2. 安装必要工具（git、curl 等）
-3. 克隆项目代码到 `~/chatgpt-on-wechat`
-4. 安装 Python 依赖
-5. 引导配置 AI 模型和通信渠道
-6. 启动服务
+```bash
+# 1. 克隆项目
+git clone https://github.com/zhayujie/chatgpt-on-wechat.git
+cd chatgpt-on-wechat
 
-运行后默认启动 Web 控制台，访问 `http://localhost:9899` 开始对话和管理Agent。
+# 2. 安装依赖
+make install
+
+# 3. 交互式配置
+make config
+```
 
 ## 管理命令
 
-安装完成后，可使用以下命令管理服务：
+项目使用 Makefile 管理，执行 `make` 可进入交互式菜单。
 
 | 命令 | 说明 |
 | --- | --- |
-| `./run.sh start` | 启动服务 |
-| `./run.sh stop` | 停止服务 |
-| `./run.sh restart` | 重启服务 |
-| `./run.sh status` | 查看运行状态 |
-| `./run.sh logs` | 查看实时日志 |
-| `./run.sh config` | 重新配置 |
-| `./run.sh update` | 更新项目代码 |
+| `make dev-local` | 本地开发启动（uv + python） |
+| `make dev-deploy` | 开发环境部署（Docker） |
+| `make start` | 启动服务 |
+| `make stop` | 停止服务 |
+| `make restart` | 重启服务 |
+| `make status` | 查看运行状态 |
+| `make logs` | 查看日志 |
+| `make config` | 交互式配置 |
+| `make update` | 更新代码并重启 |
+| `make` | 交互式管理菜单 |
+
+运行后默认启动 Web 控制台，访问 `http://localhost:9899/chat` 开始对话和管理 Agent。
+
+## Docker 部署
+
+```bash
+make dev-deploy
+# Web 控制台端口: 9899
+```

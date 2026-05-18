@@ -1,0 +1,8 @@
+{
+  "model": "deepseek-chat",
+  "open_ai_api_key": "sk-ecdfa4394ccf4085bf72d461480ffac8",
+  "open_ai_api_base": "https://api.deepseek.com",
+  "channel_type": "web",
+  "web_port": 9899,
+  "agent": true
+}

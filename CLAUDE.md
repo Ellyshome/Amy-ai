@@ -16,8 +16,10 @@ uv sync
 
 **Run the project:**
 ```bash
-python app.py          # main entry point (starts all configured channels)
-bash run.sh            # management script (env check, install, start, docker helpers)
+make dev-local         # local dev (uv sync + run)
+make dev-deploy        # Docker dev environment
+make start             # start service (Docker or local)
+python app.py          # or run directly
 ```
 
 **Docker dev environment:**

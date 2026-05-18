@@ -148,8 +148,8 @@ d:\app\Amy-ai
 
 ### 7. **部署方式**
 - **Docker**：支持容器化部署
-- **Shell 脚本**：提供 start.sh、run.sh 等管理脚本
-- **Python 应用**：可直接运行 app.py 或 main.py
+- **Makefile**：提供 `make dev-local`、`make dev-deploy`、`make start` 等管理命令
+- **Python 应用**：可直接运行 app.py
 
 ### 8. **开发特性**
 - **插件系统**：支持自定义插件扩展
