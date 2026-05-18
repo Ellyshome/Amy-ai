@@ -33,6 +33,12 @@ define _banner
 	printf "$(cCyan)========================================$(cReset)\n\n"
 endef
 
+# 从 config.json 读取配置并导出为环境变量 (供 docker-compose 使用)
+define _load_config_env
+	export WEB_PORT=$$(python3 -c "import json;print(json.load(open('$(CONFIG_FILE)')).get('web_port',9899))" 2>/dev/null || echo 9899); \
+	export CHANNEL_TYPE=$$(python3 -c "import json;print(json.load(open('$(CONFIG_FILE)')).get('channel_type','web'))" 2>/dev/null || echo web)
+endef
+
 # ---- default entry (interactive) ----------------------------
 .PHONY: help
 help: ## 显示帮助
@@ -54,6 +60,7 @@ help: ## 显示帮助
 	@printf "  $(cGreen)make restart$(cReset)         重启服务\n"
 	@printf "  $(cGreen)make status$(cReset)          查看状态\n"
 	@printf "  $(cGreen)make logs$(cReset)            查看日志\n"
+	@printf "  $(cGreen)make qr-login$(cReset)        微信扫码登录 (个人号)\n"
 	@printf "\n"
 	@printf "$(cBold)配置 & 工具:$(cReset)\n"
 	@printf "  $(cGreen)make config$(cReset)          交互式配置 (选模型/渠道/全部)\n"
@@ -85,6 +92,7 @@ menu:
 	@printf "  $(cGreen)[7]$(cReset) 启动服务\n"
 	@printf "  $(cGreen)[8]$(cReset) 停止服务\n"
 	@printf "  $(cGreen)[9]$(cReset) 重启服务\n"
+	@printf "  $(cGreen)[w]$(cReset) 微信扫码登录\n"
 	@printf "  $(cGreen)[s]$(cReset) 查看状态\n"
 	@printf "  $(cGreen)[l]$(cReset) 查看日志\n"
 	@printf "  $(cGreen)[u]$(cReset) 更新代码 & 重启\n"
@@ -102,6 +110,7 @@ menu:
 		7)  $(MAKE) start ;; \
 		8)  $(MAKE) stop ;; \
 		9)  $(MAKE) restart ;; \
+		w)  $(MAKE) qr-login ;; \
 		s)  $(MAKE) status ;; \
 		l)  $(MAKE) logs ;; \
 		u)  $(MAKE) update ;; \
@@ -136,11 +145,11 @@ dev-deploy: ## 交互式开发环境部署 (Docker)
 	else \
 		printf "$(cGreen)config.json 已存在$(cReset)\n"; \
 	fi
-	@# 检查 .env (docker-compose 用)
+	@# 检查 .env (仅存放 API Key，业务配置走 config.json)
 	@if [ ! -f "$(ROOT_DIR)/.env" ]; then \
-		printf "$(cYellow).env 文件不存在，创建默认开发配置...$(cReset)\n"; \
-		printf "CHANNEL_TYPE=web\nWEB_PORT=9899\nMODEL=deepseek-chat\nAGENT=True\nAGENT_MAX_CONTEXT_TOKENS=40000\n" > "$(ROOT_DIR)/.env"; \
-		printf "$(cGreen)已创建 .env 文件$(cReset)\n"; \
+		printf "$(cYellow).env 文件不存在，创建模板...$(cReset)\n"; \
+		printf "DEEPSEEK_API_KEY=\nDEEPSEEK_API_BASE=https://api.deepseek.com/v1\n" > "$(ROOT_DIR)/.env"; \
+		printf "$(cGreen)已创建 .env 文件 (请填入 API Key)$(cReset)\n"; \
 		read -p "是否现在编辑 .env? [Y/n]: " EDIT_ENV; \
 		if [[ ! $$EDIT_ENV == [Nn]* ]]; then \
 			$${EDITOR:-nano} "$(ROOT_DIR)/.env"; \
@@ -149,9 +158,10 @@ dev-deploy: ## 交互式开发环境部署 (Docker)
 		printf "$(cGreen).env 文件已存在$(cReset)\n"; \
 	fi
 	@printf "\n$(cCyan)构建并启动 Docker 开发环境...$(cReset)\n"
+	@$(call _load_config_env)
 	@cd "$(ROOT_DIR)" && $(DOCKER_COMPOSE) up -d --build
 	@printf "\n$(cGreen)开发环境已启动！$(cReset)\n"
-	@printf "$(cGreen)   Web 控制台: http://localhost:9899/chat$(cReset)\n"
+	@PORT=$$(python3 -c "import json;print(json.load(open('$(CONFIG_FILE)')).get('web_port',9899))" 2>/dev/null || echo 9899); printf "$(cGreen)   Web 控制台: http://localhost:%s/chat$(cReset)\n" "$$PORT"
 	@printf "$(cGreen)   管理命令: make [start|stop|restart|status|logs]$(cReset)\n"
 
 # =============================================================
@@ -228,13 +238,15 @@ start: ## 启动服务
 			IS_RUNNING=$$(docker ps -a --format '{{.Names}} {{.Status}}' | grep "amy-dev" | grep "Exited" || true); \
 			if [ -n "$$IS_RUNNING" ]; then \
 				printf "$(cCyan)启动已存在的容器...$(cReset)\n"; \
+				$(call _load_config_env)
 				cd "$(ROOT_DIR)" && $(DOCKER_COMPOSE) start; \
 			else \
 				printf "$(cCyan)创建并启动容器...$(cReset)\n"; \
+				$(call _load_config_env)
 				cd "$(ROOT_DIR)" && $(DOCKER_COMPOSE) up -d; \
 			fi; \
 			printf "$(cGreen)服务已启动$(cReset)\n"; \
-			printf "$(cGreen)   Web: http://localhost:9899/chat$(cReset)\n"; \
+			PORT=$$(python3 -c "import json;print(json.load(open('$(CONFIG_FILE)')).get('web_port',9899))" 2>/dev/null || echo 9899); printf "$(cGreen)   Web: http://localhost:%s/chat$(cReset)\n" "$$PORT"; \
 		fi; \
 	else \
 		printf "$(cYellow)非 Docker 环境，使用本地启动...$(cReset)\n"; \
@@ -256,6 +268,7 @@ stop: ## 停止服务
 restart: ## 重启服务
 	@$(call _banner,重启服务)
 	@if docker ps --format '{{.Names}}' 2>/dev/null | grep -q "amy-dev"; then \
+		$(call _load_config_env)
 		cd "$(ROOT_DIR)" && $(DOCKER_COMPOSE) restart; \
 		printf "$(cGreen)服务已重启$(cReset)\n"; \
 	else \
@@ -299,6 +312,28 @@ logs: ## 查看日志 (Docker 容器)
 		printf "  运行 $(cGreen)make start$(cReset) 启动后再查看日志\n"; \
 	fi
 
+.PHONY: qr-login
+qr-login: ## 微信扫码登录 (个人号)
+	@$(call _banner,微信扫码登录)
+	@$(call _check_config)
+	@# 更新 config.json
+	@python3 -c "import json,sys;f='$(CONFIG_FILE)';d=json.load(open(f));d.update({'channel_type':'weixin','weixin_token':''});json.dump(d,open(f,'w'),indent=2,ensure_ascii=False);print('config updated: channel_type=weixin, weixin_token=空(扫码登录)')"
+	@# 删除已保存的凭证文件，确保触发扫码登录
+	@CRED_PATH=$$(python3 -c "import json;print(json.load(open('$(CONFIG_FILE)')).get('weixin_credentials_path','~/.weixin_cow_credentials.json'))"); \
+	CRED_PATH=$$(eval echo $$CRED_PATH); \
+	if [ -f "$$CRED_PATH" ]; then \
+		rm -f "$$CRED_PATH"; \
+		printf "$(cGreen)已删除旧凭证文件: $$CRED_PATH$(cReset)\n"; \
+	fi
+	@printf "\n$(cGreen)已将渠道设置为微信个人号，Token 和旧凭证已清空。$(cReset)\n"
+	@printf "$(cCyan)登录成功后凭据会自动保存，后续启动无需重复扫码。$(cReset)\n\n"
+	@read -p "是否立即启动服务? [Y/n]: " START_NOW; \
+	if [[ ! $$START_NOW == [Nn]* ]]; then \
+		export CHANNEL_TYPE=weixin; \
+		export WEIXIN_TOKEN=; \
+		$(MAKE) dev-local; \
+	fi
+
 .PHONY: update
 update: ## 更新代码 & 重启
 	@$(call _banner,更新代码)
@@ -312,6 +347,7 @@ update: ## 更新代码 & 重启
 	fi
 	@if docker ps --format '{{.Names}}' 2>/dev/null | grep -q "amy-dev"; then \
 		printf "\n$(cCyan)重建并重启容器...$(cReset)\n"; \
+		$(call _load_config_env)
 		cd "$(ROOT_DIR)" && $(DOCKER_COMPOSE) up -d --build; \
 		printf "$(cGreen)更新完成，服务已重启$(cReset)\n"; \
 	else \
@@ -413,14 +449,7 @@ config-model: ## 配置 AI 模型
 		*) printf "$(cRed)无效选择$(cReset)\n"; exit 1 ;; \
 	 esac; \
 	 if [ -f "$(CONFIG_FILE)" ]; then \
-		python3 -c " \
-import json, sys; \
-f='$(CONFIG_FILE)'; \
-d=json.load(open(f)); \
-patch={$$MODEL_JSON}; \
-for k,v in patch.items(): d[k]=v; \
-json.dump(d, open(f,'w'), indent=2, ensure_ascii=False); \
-print('model config updated')" || { printf "$(cRed)更新 config.json 失败$(cReset)\n"; exit 1; }; \
+		python3 -c "import json,sys;f='$(CONFIG_FILE)';d=json.load(open(f));d.update({$$MODEL_JSON});json.dump(d,open(f,'w'),indent=2,ensure_ascii=False);print('model config updated')" || { printf "$(cRed)更新 config.json 失败$(cReset)\n"; exit 1; }; \
 	 else \
 		printf '{\n  %s,\n  "channel_type": "web",\n  "web_port": 9899,\n  "agent": true,\n  "agent_max_context_tokens": 50000,\n  "agent_max_steps": 15\n}\n' "$$MODEL_JSON" > "$(CONFIG_FILE)"; \
 	 fi
@@ -474,7 +503,8 @@ config-channel: ## 配置消息渠道
 		   read -p "QQ App Secret: " QSEC; \
 		   CHANNEL_JSON="\"channel_type\": \"qq\", \"qq_app_id\": \"$$QID\", \"qq_app_secret\": \"$$QSEC\"" ;; \
 		6) CHANNEL_TYPE="weixin"; \
-		   read -p "微信 Token: " WTOK; \
+		   printf "$(cCyan)提示: Token 留空则启动时自动弹出二维码扫码登录$(cReset)\n"; \
+		   read -p "微信 Token [留空扫码登录]: " WTOK; \
 		   CHANNEL_JSON="\"channel_type\": \"weixin\", \"weixin_token\": \"$$WTOK\"" ;; \
 		7) CHANNEL_TYPE="wechatcom_app"; \
 		   read -p "企微 Corp ID: " WCID; \
@@ -495,14 +525,7 @@ config-channel: ## 配置消息渠道
 		*) printf "$(cRed)无效选择$(cReset)\n"; exit 1 ;; \
 	 esac; \
 	 if [ -f "$(CONFIG_FILE)" ]; then \
-		python3 -c " \
-import json; \
-f='$(CONFIG_FILE)'; \
-d=json.load(open(f)); \
-patch={$$CHANNEL_JSON}; \
-for k,v in patch.items(): d[k]=v; \
-json.dump(d, open(f,'w'), indent=2, ensure_ascii=False); \
-print('channel config updated')" || { printf "$(cRed)更新 config.json 失败$(cReset)\n"; exit 1; }; \
+		python3 -c "import json,sys;f='$(CONFIG_FILE)';d=json.load(open(f));d.update({$$CHANNEL_JSON});json.dump(d,open(f,'w'),indent=2,ensure_ascii=False);print('channel config updated')" || { printf "$(cRed)更新 config.json 失败$(cReset)\n"; exit 1; }; \
 	 else \
 		printf '{\n  "model": "",\n  %s,\n  "agent": true,\n  "agent_max_context_tokens": 50000,\n  "agent_max_steps": 15\n}\n' "$$CHANNEL_JSON" > "$(CONFIG_FILE)"; \
 	 fi

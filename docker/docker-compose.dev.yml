@@ -17,19 +17,10 @@ services:
       - ./cow:/home/agent/cow
       - venv-data:/opt/venv
     environment:
-      # DeepSeek API（OpenAI 兼容通道）
+      # API Keys (敏感信息放 .env，不进代码仓库)
       OPEN_AI_API_KEY: ${DEEPSEEK_API_KEY:-}
       OPEN_AI_API_BASE: ${DEEPSEEK_API_BASE:-https://api.deepseek.com/v1}
-      MODEL: ${MODEL:-deepseek-chat}
-      # 渠道（开发环境用 Web）
-      CHANNEL_TYPE: ${CHANNEL_TYPE:-web}
-      WEB_PORT: ${WEB_PORT:-9899}
-      # Agent
-      AGENT: ${AGENT:-True}
-      AGENT_MAX_CONTEXT_TOKENS: ${AGENT_MAX_CONTEXT_TOKENS:-40000}
-      AGENT_MAX_CONTEXT_TURNS: ${AGENT_MAX_CONTEXT_TURNS:-20}
-      AGENT_MAX_STEPS: ${AGENT_MAX_STEPS:-15}
-      # 运行时
+      # 运行时 (非业务配置，不通过 config.json 管理)
       PYTHONUNBUFFERED: '1'
 
 volumes:
